@@ -31,7 +31,6 @@
 #------------------------------------------------------------------------
 :SoilProfiles
     LAKE,       0
-    GLACIER,    0
     DEFAULT_P,  3,  TOPSOIL, 1.0,  FAST_RES, 100.0,  SLOW_RES, 100.0
 :EndSoilProfiles
 
@@ -42,9 +41,9 @@
   :Attributes,  MAX_HT,  MAX_LAI,  MAX_LEAF_COND
   :Units,            m,     none,       mm_per_s
   # Pre-project conditions (assumed, 2026-11-09):
-  #   OPEN_VEG     : 0% forest  - rest of SB1 (HRU 1)
-  #   MIX20_VEG    : 20% forest - rest of SB2 (HRU 3)
-  #   SITE_PRE_VEG : 50% forest - solar site (HRUs 2, 4), both runs at t=0
+  #   OPEN_VEG     : 0% forest  - SB1 elevation bands (HRUs 2-5)
+  #   MIX20_VEG    : 20% forest - SB2 elevation bands (HRUs 7-11)
+  #   SITE_PRE_VEG : 50% forest - solar site (HRUs 1, 6), both runs at t=0
   # Post-project (solar run only, applied to SOLAR_SITE):
   #   SOLAR_VEG    : 0% forest  - cleared site under panels
   # Mixed values = f x forest (25 m, LAI 6) + (1 - f) x open (0.5 m, LAI 1)
@@ -55,13 +54,12 @@
 :EndVegetationClasses
 
 :VegetationParameterList
-  :Parameters,  MAX_CAPACITY,  MAX_SNOW_CAPACITY,  TFRAIN,  TFSNOW
-  :Units,                 mm,                 mm,    frac,    frac
-  # TFRAIN/TFSNOW = 1 - 0.12 x forest fraction (forest 0.88, open 1.00)
-    OPEN_VEG,          10000,              10000,    1.00,    1.00
-    MIX20_VEG,         10000,              10000,   0.976,   0.976
-    SITE_PRE_VEG,      10000,              10000,    0.94,    0.94
-    SOLAR_VEG,         10000,              10000,    1.00,    1.00
+  :Parameters,  MAX_CAPACITY,  MAX_SNOW_CAPACITY
+  :Units,                 mm,                 mm
+    OPEN_VEG,          10000,              10000
+    MIX20_VEG,         10000,              10000
+    SITE_PRE_VEG,      10000,              10000
+    SOLAR_VEG,         10000,              10000
 :EndVegetationParameterList
 
 #------------------------------------------------------------------------
@@ -77,7 +75,6 @@
     MIX20_LU,      0.0,         0.2
     SITE_PRE_LU,   0.0,         0.5
     SOLAR,         0.0,         0.0    # >>> IMPERM 0 for now: forest-removal effect only
-    GLACIER,       0.0,         0.0
 :EndLandUseClasses
 
 #------------------------------------------------------------------------
@@ -101,18 +98,13 @@
   :Units,            mm/d/K,           mm/d/K,               none,           mm/d/K,               none
   #           CFMAX (PARA_02),        (const),          MRF (PARA_18),   CFR (PARA_03),          AM (const)
     [DEFAULT],          4.0,              2.2,                0.5,              2.0,               0.48
-    GLACIER,            4.0,              2.2,                0.5,              2.0,               0.00
 :EndLandUseParameterList
 
-#------------------------------------------------------------------------
-# Glacier parameters (only matter if you have GLACIER HRUs)
-#------------------------------------------------------------------------
 :LandUseParameterList
-  :Parameters,  HBV_MELT_GLACIER_CORR,  HBV_GLACIER_KMIN,  GLAC_STORAGE_COEFF,  HBV_GLACIER_AG
-  :Units,                        none,               1/d,                 1/d,            1/mm
-  #                          MRG (const),        KG1 (const),     KG (PARA_19),       AG (const)
-    [DEFAULT],                   1.64,              0.05,                 0.1,            0.05
-:EndLandUseParameterList
+  :Parameters,  LAKE_REL_COEFF
+  :Units,                  1/d
+    [DEFAULT],             0.0
+  :EndLandUseParameterList
 
 #------------------------------------------------------------------------
 # Soil / runoff-generation parameters
@@ -140,7 +132,7 @@
 #   solar run    : UNCOMMENT them
 # Dated before :StartDate, so Raven applies the change at t = 0 and both
 # runs use identical forcings, initial conditions and parameters; only the
-# SOLAR_SITE HRUs (2, 4) differ: SITE_PRE (50% forest) -> SOLAR (0% forest).
+# SOLAR_SITE HRUs (1, 6) differ: SITE_PRE (50% forest) -> SOLAR (0% forest).
 #------------------------------------------------------------------------
 #:LandUseChange    SOLAR_SITE  SOLAR      1900-01-01
 #:VegetationChange SOLAR_SITE  SOLAR_VEG  1900-01-01

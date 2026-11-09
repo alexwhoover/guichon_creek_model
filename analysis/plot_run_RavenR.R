@@ -17,11 +17,16 @@ f    <- function(x) file.path(outd, paste0(run, "_", x))
 hy <- rvn_hyd_read(f("Hydrographs.csv"))
 
 # ---- interactive hydrographs (zoomable HTML, one per subbasin) ---------------
-# rvn_hyd_dygraph returns one dygraph per subbasin; open the HTML in a browser
-dg <- rvn_hyd_dygraph(hy)
-for (i in seq_along(dg)) {
+# rvn_hyd_dygraph's automatic basin detection breaks on the reservoir-inflow
+# column ("Guichon_08LG041_resinflow" -> bogus basin "Guichon_08LG041inflow"),
+# and its `basins == ""` test fails for vectors in R >= 4.2. So pass the basin
+# names explicitly, one at a time (sim columns = all except precip/_obs/_resinflow).
+cols   <- colnames(hy$hyd)
+basins <- cols[cols != "precip" & !grepl("_obs$|_resinflow$", cols)]
+for (i in seq_along(basins)) {
+  dg   <- rvn_hyd_dygraph(hy, basins = basins[i])[[1]]
   html <- file.path(getwd(), plt, paste0(run, "_dygraph_", i, ".html"))
-  saveWidget(dg[[i]], html, selfcontained = FALSE, libdir = "lib")
+  saveWidget(dg, html, selfcontained = FALSE, libdir = "lib")
   cat("  wrote", html, "\n")
 }
 

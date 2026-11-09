@@ -4,9 +4,8 @@
 #
 # Raven HBV-EC emulation - WATERSHED / HRU FILE
 #
-# Layout used here: TWO subbasins, each split into 2 HRUs:
-#   the solar footprint clipped to that subbasin, and the rest of the subbasin.
-#   4 HRUs total. No elevation bands in v1.
+# Layout used here: TWO subbasins, each split into elevation-band HRUs plus
+#   one solar-footprint HRU (never merged into a band). 11 HRUs total.
 #
 # Everything in this file comes from GIS (DEM + land cover + basin outline).
 #------------------------------------------------------------------------
@@ -27,48 +26,69 @@
 
 #------------------------------------------------------------------------
 # Subbasin in-catchment routing (HBV MAXBAS, triangular unit hydrograph)
-#   TIME_CONC    = Tc from GIS [d]   (SB1: 4.50 h, SB2: 13.68 h)
+#   TIME_CONC    = HBV MAXBAS [d]: all in-subbasin delay (hillslope + channel)
 #   TIME_TO_PEAK = TIME_CONC / 2 [d] (symmetric triangle, as in HBV MAXBAS)
-#   Both are calibration parameters - these are physically based starting values.
+#   Calibration parameters. Starting values typical for 100-1000 km2 basins.
+#   GIS channel Tc (SB1 4.50 h = 0.19 d, SB2 13.68 h = 0.57 d) was too short
+#   to delay anything at a daily step, so it is not used here.
 #------------------------------------------------------------------------
 :SubBasinProperties
   :Parameters,   TIME_CONC,   TIME_TO_PEAK
   :Units     ,           d,              d
-             1,     0.1874,         0.0937
-             2,     0.5699,         0.2850
+             1,        2.0,            1.0
+             2,        3.0,            1.5
 :EndSubBasinProperties
 
 #------------------------------------------------------------------------
 # HRUs
-#   IDs follow the ArcGIS dissolve (HRU_ID = OBJECTID):
-#   1  SB1 minus solar footprint      3  SB2 minus solar footprint
-#   2  solar footprint within SB1     4  solar footprint within SB2
-# Pre-project classes: OPEN (0% forest) HRU 1; MIX20 (20% forest) HRU 3;
-# SITE_PRE (50% forest) HRUs 2, 4. The solar run switches HRUs 2 and 4
-# to SOLAR / SOLAR_VEG via :LandUseChange / :VegetationChange (added later).
+#   IDs = HRU_ID field of data/delineation_copy/hrus_final.shp
+#   Bands: 1 <1000, 2 1000-1200, 3 1200-1400, 4 1400-1600, 5 1600+ m; solar = BAND 0
+#   SB1: 1 solar, 2-5 bands 2-5 (SB1 has no land below 1000 m)
+#   SB2: 6 solar, 7-11 bands 1-5
+# Pre-project classes: OPEN (0% forest) all SB1 bands; MIX20 (20% forest) all
+# SB2 bands; SITE_PRE (50% forest) solar HRUs 1, 6. The solar run switches
+# HRUs 1 and 6 to SOLAR / SOLAR_VEG via :LandUseChange / :VegetationChange.
 #
-# Source: ArcGIS, EPSG:3005 (2026-11-09)
-#   AREA       km2  HRU 1 + 2 = 185.046 (SB1); HRU 3 + 4 = 620.715 (SB2)
+# Source: data/scripts/hru_attributes_arcpy.py -> data/processed/hru_attributes.csv
+#   (2026-11-09; DEM = MRDEM30_dtm.tif, 30 m)
+#   AREA       km2  polygon area in EPSG:3005. Totals: SB1 184.813, SB2 620.163
+#                   (0.15% / 0.10% below the subbasin polygons: raster stair-step
+#                   slivers at the watershed edge; negligible)
 #   ELEVATION  m    zonal mean of DEM. OROCORR_HBV lapses temperature and
-#                   precip from the gauge elevation to this value.
-#   LATITUDE / LONGITUDE  deg  HRU centroid (Feature To Point, inside), WGS84
-#   SLOPE / ASPECT  set to 0 (flat) in v1. They only feed the HBV aspect melt
-#                   correction, which averages to ~0 over HRUs this large and is
-#                   identical in baseline and solar runs. With SLOPE = 0 the
-#                   correction is off. If elevation bands are added, use real
-#                   values; Raven aspect is counter-clockwise from north (W = 90):
+#                   precip from the gauge elevation (1268 m) to this value.
+#   LATITUDE / LONGITUDE  deg  inside point (Feature To Point, INSIDE), WGS84
+#   SLOPE / ASPECT  set to 0 (flat). They only feed the HBV aspect melt
+#                   correction. Each band is a ring around the whole basin
+#                   containing all aspects, so its mean aspect is meaningless;
+#                   SLOPE = 0 turns the correction off. If HRUs are ever split
+#                   by aspect, Raven aspect is counter-clockwise from N (W = 90):
 #                   degrees(atan2(-sin_mean, cos_mean)) % 360
 #------------------------------------------------------------------------
 :HRUs
   :Attributes  AREA     ELEVATION  LATITUDE  LONGITUDE  BASIN_ID  LAND_USE_CLASS  VEG_CLASS    SOIL_PROFILE  AQUIFER_PROFILE  TERRAIN_CLASS  SLOPE  ASPECT
   :Units       km2      m          deg       deg        none      none            none         none          none             none           deg    deg
   # Subbasin 1: Guichon_BelowSolar
-  1,           181.806, 1371.0,    50.5936,  -120.9490, 1,        OPEN_LU,        OPEN_VEG,    DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0
-  2,           3.241,   1215.0,    50.5481,  -120.8366, 1,        SITE_PRE_LU,    SITE_PRE_VEG, DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0
+  1,           3.237,   1215.0,    50.5481,  -120.8366, 1,        SITE_PRE_LU,    SITE_PRE_VEG, DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB1 solar
+  2,           39.328,  1152.7,    50.5714,  -120.8790, 1,        OPEN_LU,        OPEN_VEG,     DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB1 1000-1200
+  3,           71.051,  1300.8,    50.6078,  -120.9470, 1,        OPEN_LU,        OPEN_VEG,     DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB1 1200-1400
+  4,           48.067,  1485.6,    50.5171,  -120.9666, 1,        OPEN_LU,        OPEN_VEG,     DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB1 1400-1600
+  5,           23.130,  1719.0,    50.5880,  -121.0147, 1,        OPEN_LU,        OPEN_VEG,     DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB1 1600+
   # Subbasin 2: Guichon_08LG041
-  3,           619.964, 1366.8,    50.4723,  -120.7263, 2,        MIX20_LU,       MIX20_VEG,   DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0
-  4,           0.752,   1231.5,    50.5383,  -120.8299, 2,        SITE_PRE_LU,    SITE_PRE_VEG, DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0
+  6,           0.751,   1231.5,    50.5383,  -120.8299, 2,        SITE_PRE_LU,    SITE_PRE_VEG, DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB2 solar
+  7,           11.783,  973.5,     50.4176,  -120.8132, 2,        MIX20_LU,       MIX20_VEG,    DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB2 <1000
+  8,           83.250,  1122.0,    50.4618,  -120.9062, 2,        MIX20_LU,       MIX20_VEG,    DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB2 1000-1200
+  9,           250.091, 1308.7,    50.4520,  -120.6199, 2,        MIX20_LU,       MIX20_VEG,    DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB2 1200-1400
+  10,          235.559, 1484.5,    50.5284,  -120.6600, 2,        MIX20_LU,       MIX20_VEG,    DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB2 1400-1600
+  11,          38.729,  1669.7,    50.5328,  -120.5893, 2,        MIX20_LU,       MIX20_VEG,    DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0   # SB2 1600+
 :EndHRUs
+
+:Reservoir Mamit_Lake
+  :SubBasinID 2
+  :WeirCoefficient  0.6 # Guess
+  :CrestWidth 10.0 # Guess
+  :MaxDepth 5.0 # Guess
+  :LakeArea 2030000.0 # From GIS
+:EndReservoir
 
 #------------------------------------------------------------------------
 # HRU group membership (groups are declared in hbvec.rvi)
@@ -76,13 +96,13 @@
 #   SOLAR_SITE          : HRUs whose land cover changes in the solar run
 #------------------------------------------------------------------------
 :HRUGroup SB1_HRUs
-  1,2
+  1,2,3,4,5
 :EndHRUGroup
 
 :HRUGroup SB2_HRUs
-  3,4
+  6,7,8,9,10,11
 :EndHRUGroup
 
 :HRUGroup SOLAR_SITE
-  2,4
+  1,6
 :EndHRUGroup

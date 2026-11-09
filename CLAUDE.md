@@ -24,7 +24,7 @@ Build the simplest model that runs end to end, then add complexity one step at a
 
 ## Naming conventions
 - **Subbasin IDs:** 1 = `Guichon_BelowSolar`, 2 = `Guichon_08LG041`
-- **HRU IDs:** sequential 1…N from the ArcGIS dissolve (`HRU_ID = OBJECTID`)
+- **HRU IDs:** sequential 1…N, taken from the `HRU_ID` field of `data/delineation_copy/hrus_final.shp`. Solar HRUs are 1 (SB1) and 6 (SB2). Attributes come from `data/scripts/hru_attributes_arcpy.py` → `data/processed/hru_attributes.csv`.
 - **Baseline classes (v1, all HRUs):** `DEFAULT_LU`, `DEFAULT_VEG`, `DEFAULT_P`
 - **Scenario classes:** `SOLAR` (land use) and `SOLAR_VEG` (vegetation)
 - **HRU group:** `SOLAR_SITE`. Declare it in the .rvi with `:DefineHRUGroups` and populate it in the .rvh.
@@ -84,3 +84,4 @@ Outputs to compare: `<run>_Hydrographs.csv` (subbasin 1 for the answer, subbasin
 - When suggesting ArcGIS steps, name the exact ArcGIS Pro tool and its key parameters.
 - When editing Raven files, show only the changed blocks unless asked for the full file.
 - Flag any change that would make the baseline and solar runs differ in anything other than the solar HRU's land cover.
+- **Do not run Raven.** After editing model files, do not execute `Raven.exe` (including test copies). I run the model myself. Tell me what to run and what to check instead.

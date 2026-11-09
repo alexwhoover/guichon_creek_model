@@ -56,7 +56,6 @@
 #------------------------------------------------------------------------
 :Alias       FAST_RESERVOIR SOIL[1]     # HBV upper zone
 :Alias       SLOW_RESERVOIR SOIL[2]     # HBV lower zone
-:LakeStorage SLOW_RESERVOIR             # an HBV oddity: lake precip/evap act on the lower zone
 
 #------------------------------------------------------------------------
 # HRU groups (members are listed in hbvec.rvh)
@@ -79,16 +78,11 @@
     :-->Conditional HRU_TYPE IS_NOT LAKE
   :SoilEvaporation    SOILEVAP_HBV        SOIL[0]         ATMOSPHERE
   :CapillaryRise      CRISE_HBV           FAST_RESERVOIR  SOIL[0]
-  :LakeEvaporation    LAKE_EVAP_BASIC     SLOW_RESERVOIR  ATMOSPHERE
+  :LakeEvaporation    LAKE_EVAP_BASIC     LAKE_STORAGE    ATMOSPHERE      # non hbv
+  :LakeRelease        LAKEREL_LINEAR      LAKE_STORAGE    SURFACE_WATER   # non hbv
   :Percolation        PERC_CONSTANT       FAST_RESERVOIR  SLOW_RESERVOIR
   :Baseflow           BASE_POWER_LAW      FAST_RESERVOIR  SURFACE_WATER
   :Baseflow           BASE_LINEAR         SLOW_RESERVOIR  SURFACE_WATER
-  # HBV-EC has ONE shared upper and lower zone per basin. Equilibrate within
-  # each subbasin only, so water is not moved between subbasins:
-  :LateralEquilibrate RAVEN_DEFAULT       SB1_HRUs        FAST_RESERVOIR  1.0
-  :LateralEquilibrate RAVEN_DEFAULT       SB1_HRUs        SLOW_RESERVOIR  1.0
-  :LateralEquilibrate RAVEN_DEFAULT       SB2_HRUs        FAST_RESERVOIR  1.0
-  :LateralEquilibrate RAVEN_DEFAULT       SB2_HRUs        SLOW_RESERVOIR  1.0
 :EndHydrologicProcesses
 
 #------------------------------------------------------------------------
@@ -96,4 +90,5 @@
 #------------------------------------------------------------------------
 :EvaluationMetrics   NASH_SUTCLIFFE  KLING_GUPTA  PCT_BIAS  RMSE
 :WriteForcingFunctions          # writes ForcingFunctions.csv - check PET/temp/precip look sane
+:CustomOutput DAILY AVERAGE SNOW BY_HRU   # SWE [mm] per HRU: melt-out should stagger with elevation band
 #:CreateRVPTemplate             # uncomment once to have Raven list every parameter it needs
