@@ -1,0 +1,146 @@
+#########################################################################
+:FileType          rvp ASCII Raven 4.1
+:CreationDate      2026-11-06
+#
+# Raven HBV-EC emulation - PARAMETER FILE
+#
+# Values below are STARTING VALUES (taken from the Alouette2 and Salmon_HBV
+# tutorials), NOT values for your basin. Most are found by calibration
+# against observed streamflow (e.g. with OSTRICH). The comment above each
+# value gives the classic HBV-EC parameter name / HBV_PARA_## index used
+# in the Salmon_HBV tutorial, so you can match them to the HBV literature.
+#------------------------------------------------------------------------
+
+#------------------------------------------------------------------------
+# Soil classes: TOPSOIL = HBV soil moisture box, FAST_RES = upper zone,
+# SLOW_RES = lower zone (conceptual stores, not real soils)
+#------------------------------------------------------------------------
+:SoilClasses
+  :Attributes,
+  :Units,
+    TOPSOIL
+    FAST_RES
+    SLOW_RES
+:EndSoilClasses
+
+#------------------------------------------------------------------------
+# Soil profiles: name, #layers, {class, thickness [m]} x layers
+#   HBV FC [mm] = TOPSOIL thickness [m] x 1000 x POROSITY
+#   e.g. 1.0 m x 1000 x 0.20 = 200 mm.  Thickness is a calibration parameter
+#   (HBV_PARA_17). FAST_RES / SLOW_RES just need to be "big" (100 m).
+#------------------------------------------------------------------------
+:SoilProfiles
+    LAKE,       0
+    GLACIER,    0
+    DEFAULT_P,  3,  TOPSOIL, 1.0,  FAST_RES, 100.0,  SLOW_RES, 100.0
+:EndSoilProfiles
+
+#------------------------------------------------------------------------
+# Vegetation (only used weakly in HBV-EC)
+#------------------------------------------------------------------------
+:VegetationClasses
+  :Attributes,  MAX_HT,  MAX_LAI,  MAX_LEAF_COND
+  :Units,            m,     none,       mm_per_s
+  # Pre-project conditions (assumed, 2026-11-09):
+  #   OPEN_VEG     : 0% forest  - rest of SB1 (HRU 1)
+  #   MIX20_VEG    : 20% forest - rest of SB2 (HRU 3)
+  #   SITE_PRE_VEG : 50% forest - solar site (HRUs 2, 4), both runs at t=0
+  # Post-project (solar run only, applied to SOLAR_SITE):
+  #   SOLAR_VEG    : 0% forest  - cleared site under panels
+  # Mixed values = f x forest (25 m, LAI 6) + (1 - f) x open (0.5 m, LAI 1)
+    OPEN_VEG,      0.5,      1.0,            5.3
+    MIX20_VEG,     5.4,      2.0,            5.3
+    SITE_PRE_VEG, 12.75,     3.5,            5.3
+    SOLAR_VEG,     0.5,      1.0,            5.3
+:EndVegetationClasses
+
+:VegetationParameterList
+  :Parameters,  MAX_CAPACITY,  MAX_SNOW_CAPACITY,  TFRAIN,  TFSNOW
+  :Units,                 mm,                 mm,    frac,    frac
+  # TFRAIN/TFSNOW = 1 - 0.12 x forest fraction (forest 0.88, open 1.00)
+    OPEN_VEG,          10000,              10000,    1.00,    1.00
+    MIX20_VEG,         10000,              10000,   0.976,   0.976
+    SITE_PRE_VEG,      10000,              10000,    0.94,    0.94
+    SOLAR_VEG,         10000,              10000,    1.00,    1.00
+:EndVegetationParameterList
+
+#------------------------------------------------------------------------
+# Land use classes
+#   IMPERM     = impervious fraction (0 for natural basins)
+#   FOREST_COV = forest fraction of the HRU (scales the HBV forest melt correction)
+#   Keep FOREST_COV consistent with the matching vegetation class above.
+#------------------------------------------------------------------------
+:LandUseClasses
+  :Attributes,  IMPERM,  FOREST_COV
+  :Units,         frac,        frac
+    OPEN_LU,       0.0,         0.0
+    MIX20_LU,      0.0,         0.2
+    SITE_PRE_LU,   0.0,         0.5
+    SOLAR,         0.0,         0.0    # >>> IMPERM 0 for now: forest-removal effect only
+    GLACIER,       0.0,         0.0
+:EndLandUseClasses
+
+#------------------------------------------------------------------------
+# Global parameters
+#------------------------------------------------------------------------
+:GlobalParameter RAINSNOW_TEMP     0.0    # TT  [C]   rain/snow threshold        (HBV_PARA_01)
+:GlobalParameter RAINSNOW_DELTA    2.0    # TTI [C]   width of rain/snow mix zone (usually fixed)
+:GlobalParameter SNOW_SWI          0.05   # CWH [-]   liquid water holding cap. of snow (HBV_PARA_04)
+:GlobalParameter ADIABATIC_LAPSE   6.0    # TCALT [C/km] temperature lapse rate   (HBV_PARA_13)
+:GlobalParameter PRECIP_LAPSE      0.0    # PCALT [mm/d/km] precip lapse rate     (HBV_PARA_12)
+
+# Required by Raven for models with more than one subbasin; used to estimate
+# reference flows. 08LG041 mean flow 1982-10 to 2011-09 = 0.72 m3/s over 805.8 km2.
+:AvgAnnualRunoff   28                     # mm/yr
+
+#------------------------------------------------------------------------
+# Snow melt parameters (POTMELT_HBV)
+#------------------------------------------------------------------------
+:LandUseParameterList
+  :Parameters,  MELT_FACTOR,  MIN_MELT_FACTOR,  HBV_MELT_FOR_CORR,  REFREEZE_FACTOR,  HBV_MELT_ASP_CORR
+  :Units,            mm/d/K,           mm/d/K,               none,           mm/d/K,               none
+  #           CFMAX (PARA_02),        (const),          MRF (PARA_18),   CFR (PARA_03),          AM (const)
+    [DEFAULT],          4.0,              2.2,                0.5,              2.0,               0.48
+    GLACIER,            4.0,              2.2,                0.5,              2.0,               0.00
+:EndLandUseParameterList
+
+#------------------------------------------------------------------------
+# Glacier parameters (only matter if you have GLACIER HRUs)
+#------------------------------------------------------------------------
+:LandUseParameterList
+  :Parameters,  HBV_MELT_GLACIER_CORR,  HBV_GLACIER_KMIN,  GLAC_STORAGE_COEFF,  HBV_GLACIER_AG
+  :Units,                        none,               1/d,                 1/d,            1/mm
+  #                          MRG (const),        KG1 (const),     KG (PARA_19),       AG (const)
+    [DEFAULT],                   1.64,              0.05,                 0.1,            0.05
+:EndLandUseParameterList
+
+#------------------------------------------------------------------------
+# Soil / runoff-generation parameters
+#   POROSITY         -> sets HBV FC together with TOPSOIL thickness   (PARA_05)
+#   FIELD_CAPACITY   -> HBV LP, fraction of FC above which ET = PET   (PARA_06)
+#   SAT_WILT         -> wilting fraction                              (PARA_14)
+#   HBV_BETA         -> BETA, shape of runoff-generation curve        (PARA_07)
+#   MAX_CAP_RISE_RATE-> CFLUX [mm/d] capillary rise                   (PARA_16)
+#   FAST_RES  MAX_PERC_RATE  -> PERC [mm/d]                           (PARA_08)
+#   FAST_RES  BASEFLOW_COEFF -> KF  [1/d] upper-zone recession        (PARA_09)
+#   FAST_RES  BASEFLOW_N     -> 1 + ALPHA (non-linearity)             (PARA_15)
+#   SLOW_RES  BASEFLOW_COEFF -> KS  [1/d] lower-zone recession        (PARA_10)
+#------------------------------------------------------------------------
+:SoilParameterList
+  :Parameters,  POROSITY,  FIELD_CAPACITY,  SAT_WILT,  HBV_BETA,  MAX_CAP_RISE_RATE,  MAX_PERC_RATE,  BASEFLOW_COEFF,  BASEFLOW_N
+  :Units,           none,            none,      none,      none,               mm/d,           mm/d,             1/d,        none
+    [DEFAULT],       0.2,             0.7,       0.0,       2.0,                1.0,            0.0,             0.0,         0.0
+    FAST_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,            5.0,             0.2,         1.5
+    SLOW_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,       _DEFAULT,            0.05,         1.0
+:EndSoilParameterList
+
+#------------------------------------------------------------------------
+# SCENARIO: solar site land-cover change
+#   baseline run : keep the two lines below COMMENTED OUT
+#   solar run    : UNCOMMENT them
+# Dated before :StartDate, so Raven applies the change at t = 0 and both
+# runs use identical forcings, initial conditions and parameters; only the
+# SOLAR_SITE HRUs (2, 4) differ: SITE_PRE (50% forest) -> SOLAR (0% forest).
+#------------------------------------------------------------------------
+#:LandUseChange    SOLAR_SITE  SOLAR      1900-01-01
+#:VegetationChange SOLAR_SITE  SOLAR_VEG  1900-01-01

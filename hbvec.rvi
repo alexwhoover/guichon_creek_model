@@ -1,0 +1,99 @@
+#########################################################################
+:FileType          rvi ASCII Raven 4.1
+:WrittenBy         HBV-EC template (from Raven Manual v4.1 App. F.2 + Alouette2 / Salmon_HBV tutorials)
+:CreationDate      2026-11-06
+#
+# Raven HBV-EC emulation - MAIN INPUT FILE
+# Run with:   Raven.exe hbvec -o output/
+#
+# Lines marked  >>> TODO  must be changed for your watershed.
+#------------------------------------------------------------------------
+
+#------------------------------------------------------------------------
+# Simulation period
+#------------------------------------------------------------------------
+# Met (Lornex, 1967-01 to 2011-11) and flow (08LG041, 1982-01 to 2024-12) overlap
+# 1982-2011. Water years Oct-Sep. First water year (1982-83) is spin-up only.
+:StartDate             1982-10-01 00:00:00
+:EndDate               2011-09-30 00:00:00
+:TimeStep              1.0                    # daily (HBV-EC is a daily model)
+# (:EvaluationPeriod lines are below :SoilModel - Raven ignores them if placed earlier)
+
+#------------------------------------------------------------------------
+# Model options (standard HBV-EC set - do not change for a strict emulation)
+#------------------------------------------------------------------------
+:Method                     ORDERED_SERIES
+:Interpolation              INTERP_NEAREST_NEIGHBOR
+
+:Routing                    ROUTE_NONE               # v1: no in-channel routing; SB1 outflow passed straight to SB2
+#:Routing                   ROUTE_DIFFUSIVE_WAVE     # later: uses the :ChannelProfile blocks in .rvp
+:CatchmentRoute             ROUTE_TRI_CONVOLUTION    # HBV MAXBAS triangular weighting
+
+:Evaporation                PET_FROMMONTHLY          # needs :MonthlyAveEvaporation + :MonthlyAveTemperature in .rvt
+:OW_Evaporation             PET_FROMMONTHLY
+:SWRadiationMethod          SW_RAD_DEFAULT
+:SWCloudCorrect             SW_CLOUD_CORR_NONE
+:SWCanopyCorrect            SW_CANOPY_CORR_NONE
+:LWRadiationMethod          LW_RAD_DEFAULT
+:RainSnowFraction           RAINSNOW_HBV
+:PotentialMeltMethod        POTMELT_HBV
+:OroTempCorrect             OROCORR_HBV
+:OroPrecipCorrect           OROCORR_HBV
+:OroPETCorrect              OROCORR_HBV
+:CloudCoverMethod           CLOUDCOV_NONE
+:PrecipIceptFract           PRECIP_ICEPT_USER
+:MonthlyInterpolationMethod MONTHINT_LINEAR_21
+
+:SoilModel                  SOIL_MULTILAYER 3
+
+# Diagnostics only over these windows (spin-up year excluded).
+# Calibrate on one, validate on the other. Must come after :SoilModel.
+:EvaluationPeriod  CALIBRATION  1983-10-01  1999-09-30
+:EvaluationPeriod  VALIDATION   1999-10-01  2011-09-30
+
+#------------------------------------------------------------------------
+# Soil layer aliases (SOIL[0] = HBV soil moisture box)
+#------------------------------------------------------------------------
+:Alias       FAST_RESERVOIR SOIL[1]     # HBV upper zone
+:Alias       SLOW_RESERVOIR SOIL[2]     # HBV lower zone
+:LakeStorage SLOW_RESERVOIR             # an HBV oddity: lake precip/evap act on the lower zone
+
+#------------------------------------------------------------------------
+# HRU groups (members are listed in hbvec.rvh)
+#------------------------------------------------------------------------
+:DefineHRUGroups SB1_HRUs, SB2_HRUs, SOLAR_SITE
+
+#------------------------------------------------------------------------
+# Hydrologic processes - HBV-EC (Raven Manual v4.1, Appendix F.2)
+#------------------------------------------------------------------------
+:HydrologicProcesses
+  :SnowRefreeze       FREEZE_DEGREE_DAY   SNOW_LIQ        SNOW
+  :Precipitation      PRECIP_RAVEN        ATMOS_PRECIP    MULTIPLE
+  :CanopyEvaporation  CANEVP_ALL          CANOPY          ATMOSPHERE
+  :CanopySublimation  CANEVP_ALL          CANOPY_SNOW     ATMOSPHERE
+  :SnowBalance        SNOBAL_SIMPLE_MELT  SNOW            SNOW_LIQ
+  :Overflow           OVERFLOW_RAVEN      SNOW_LIQ        PONDED_WATER
+  :Infiltration       INF_HBV             PONDED_WATER    MULTIPLE
+  :Flush              RAVEN_DEFAULT       SURFACE_WATER   FAST_RESERVOIR
+    :-->Conditional HRU_TYPE IS_NOT GLACIER
+    :-->Conditional HRU_TYPE IS_NOT LAKE
+  :SoilEvaporation    SOILEVAP_HBV        SOIL[0]         ATMOSPHERE
+  :CapillaryRise      CRISE_HBV           FAST_RESERVOIR  SOIL[0]
+  :LakeEvaporation    LAKE_EVAP_BASIC     SLOW_RESERVOIR  ATMOSPHERE
+  :Percolation        PERC_CONSTANT       FAST_RESERVOIR  SLOW_RESERVOIR
+  :Baseflow           BASE_POWER_LAW      FAST_RESERVOIR  SURFACE_WATER
+  :Baseflow           BASE_LINEAR         SLOW_RESERVOIR  SURFACE_WATER
+  # HBV-EC has ONE shared upper and lower zone per basin. Equilibrate within
+  # each subbasin only, so water is not moved between subbasins:
+  :LateralEquilibrate RAVEN_DEFAULT       SB1_HRUs        FAST_RESERVOIR  1.0
+  :LateralEquilibrate RAVEN_DEFAULT       SB1_HRUs        SLOW_RESERVOIR  1.0
+  :LateralEquilibrate RAVEN_DEFAULT       SB2_HRUs        FAST_RESERVOIR  1.0
+  :LateralEquilibrate RAVEN_DEFAULT       SB2_HRUs        SLOW_RESERVOIR  1.0
+:EndHydrologicProcesses
+
+#------------------------------------------------------------------------
+# Output options
+#------------------------------------------------------------------------
+:EvaluationMetrics   NASH_SUTCLIFFE  KLING_GUPTA  PCT_BIAS  RMSE
+:WriteForcingFunctions          # writes ForcingFunctions.csv - check PET/temp/precip look sane
+#:CreateRVPTemplate             # uncomment once to have Raven list every parameter it needs

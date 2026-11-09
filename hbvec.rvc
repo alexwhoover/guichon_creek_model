@@ -1,0 +1,10 @@
+#########################################################################
+:FileType          rvc ASCII Raven 4.1
+:CreationDate      2026-11-06
+#
+# Raven HBV-EC emulation - INITIAL CONDITIONS
+#
+# Intentionally empty: all storages and flows start at 0 and the one-year
+# spin-up (before the first :EvaluationPeriod in the .rvi) brings them to
+# realistic levels. Raven still expects this file to exist, so keep it.
+#------------------------------------------------------------------------

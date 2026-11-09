@@ -1,0 +1,88 @@
+#########################################################################
+:FileType          rvh ASCII Raven 4.1
+:CreationDate      2026-11-06
+#
+# Raven HBV-EC emulation - WATERSHED / HRU FILE
+#
+# Layout used here: TWO subbasins, each split into 2 HRUs:
+#   the solar footprint clipped to that subbasin, and the rest of the subbasin.
+#   4 HRUs total. No elevation bands in v1.
+#
+# Everything in this file comes from GIS (DEM + land cover + basin outline).
+#------------------------------------------------------------------------
+
+#------------------------------------------------------------------------
+# Subbasins (from GIS delineation, 2026-11-09)
+#   1 Guichon_BelowSolar : 185.05 km2, outlet just below the solar site (main output)
+#   2 Guichon_08LG041    : 620.72 km2 incremental, outlet = WSC 08LG041 (calibration)
+#   REACH_LENGTH = channelized longest flow path from GIS [km]
+#   PROFILE      = channel cross-section/slope/Manning's n, defined in hbvec.rvp
+#------------------------------------------------------------------------
+:SubBasins
+  :Attributes   NAME                 DOWNSTREAM_ID   PROFILE          REACH_LENGTH   GAUGED
+  :Units        none                 none            none             km             none
+  1,            Guichon_BelowSolar,  2,              CHAN_GUICHON_1,  31.983,        1
+  2,            Guichon_08LG041,     -1,             CHAN_GUICHON_2,  69.797,        1
+:EndSubBasins
+
+#------------------------------------------------------------------------
+# Subbasin in-catchment routing (HBV MAXBAS, triangular unit hydrograph)
+#   TIME_CONC    = Tc from GIS [d]   (SB1: 4.50 h, SB2: 13.68 h)
+#   TIME_TO_PEAK = TIME_CONC / 2 [d] (symmetric triangle, as in HBV MAXBAS)
+#   Both are calibration parameters - these are physically based starting values.
+#------------------------------------------------------------------------
+:SubBasinProperties
+  :Parameters,   TIME_CONC,   TIME_TO_PEAK
+  :Units     ,           d,              d
+             1,     0.1874,         0.0937
+             2,     0.5699,         0.2850
+:EndSubBasinProperties
+
+#------------------------------------------------------------------------
+# HRUs
+#   IDs follow the ArcGIS dissolve (HRU_ID = OBJECTID):
+#   1  SB1 minus solar footprint      3  SB2 minus solar footprint
+#   2  solar footprint within SB1     4  solar footprint within SB2
+# Pre-project classes: OPEN (0% forest) HRU 1; MIX20 (20% forest) HRU 3;
+# SITE_PRE (50% forest) HRUs 2, 4. The solar run switches HRUs 2 and 4
+# to SOLAR / SOLAR_VEG via :LandUseChange / :VegetationChange (added later).
+#
+# Source: ArcGIS, EPSG:3005 (2026-11-09)
+#   AREA       km2  HRU 1 + 2 = 185.046 (SB1); HRU 3 + 4 = 620.715 (SB2)
+#   ELEVATION  m    zonal mean of DEM. OROCORR_HBV lapses temperature and
+#                   precip from the gauge elevation to this value.
+#   LATITUDE / LONGITUDE  deg  HRU centroid (Feature To Point, inside), WGS84
+#   SLOPE / ASPECT  set to 0 (flat) in v1. They only feed the HBV aspect melt
+#                   correction, which averages to ~0 over HRUs this large and is
+#                   identical in baseline and solar runs. With SLOPE = 0 the
+#                   correction is off. If elevation bands are added, use real
+#                   values; Raven aspect is counter-clockwise from north (W = 90):
+#                   degrees(atan2(-sin_mean, cos_mean)) % 360
+#------------------------------------------------------------------------
+:HRUs
+  :Attributes  AREA     ELEVATION  LATITUDE  LONGITUDE  BASIN_ID  LAND_USE_CLASS  VEG_CLASS    SOIL_PROFILE  AQUIFER_PROFILE  TERRAIN_CLASS  SLOPE  ASPECT
+  :Units       km2      m          deg       deg        none      none            none         none          none             none           deg    deg
+  # Subbasin 1: Guichon_BelowSolar
+  1,           181.806, 1371.0,    50.5936,  -120.9490, 1,        OPEN_LU,        OPEN_VEG,    DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0
+  2,           3.241,   1215.0,    50.5481,  -120.8366, 1,        SITE_PRE_LU,    SITE_PRE_VEG, DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0
+  # Subbasin 2: Guichon_08LG041
+  3,           619.964, 1366.8,    50.4723,  -120.7263, 2,        MIX20_LU,       MIX20_VEG,   DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0
+  4,           0.752,   1231.5,    50.5383,  -120.8299, 2,        SITE_PRE_LU,    SITE_PRE_VEG, DEFAULT_P,    [NONE],          [NONE],        0.0,   0.0
+:EndHRUs
+
+#------------------------------------------------------------------------
+# HRU group membership (groups are declared in hbvec.rvi)
+#   SB1_HRUs / SB2_HRUs : HBV-EC shared upper/lower zones, one pair per subbasin
+#   SOLAR_SITE          : HRUs whose land cover changes in the solar run
+#------------------------------------------------------------------------
+:HRUGroup SB1_HRUs
+  1,2
+:EndHRUGroup
+
+:HRUGroup SB2_HRUs
+  3,4
+:EndHRUGroup
+
+:HRUGroup SOLAR_SITE
+  2,4
+:EndHRUGroup

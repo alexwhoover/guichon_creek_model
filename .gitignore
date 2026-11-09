@@ -1,0 +1,33 @@
+# Raven run outputs (regenerate with: Raven.exe hbvec -o output\ -r <run>)
+output/*
+!output/.gitkeep
+
+# Raven outputs written to the model folder if a run forgets "-o output\"
+Raven_errors.txt
+*Hydrographs.csv
+*Diagnostics.csv
+*ForcingFunctions.csv
+*WatershedStorage.csv
+*solution.rvc
+*solution.rvp
+
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editors / local tool settings
+.vscode/
+.claude/settings.local.json
+
+# Windows / Office clutter
+Thumbs.db
+desktop.ini
+*Zone.Identifier
+~$*
+*.tmp
