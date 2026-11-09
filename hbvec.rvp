@@ -80,10 +80,13 @@
 #------------------------------------------------------------------------
 # Global parameters
 #------------------------------------------------------------------------
-:GlobalParameter RAINSNOW_TEMP     0.0    # TT  [C]   rain/snow threshold        (HBV_PARA_01)
+# Calibration step 1 (snow timing, 2026-11-09): TT 0.0->0.5, TCALT 6.0->6.5,
+# CFMAX 4.0->2.5, MIN_MELT 2.2->1.5. Grid search over 72 runs; chosen on
+# volume-independent fit (r 0.70->0.79, volume-matched NSE 0.24->0.42).
+:GlobalParameter RAINSNOW_TEMP     0.5    # TT  [C]   rain/snow threshold        (HBV_PARA_01)
 :GlobalParameter RAINSNOW_DELTA    2.0    # TTI [C]   width of rain/snow mix zone (usually fixed)
 :GlobalParameter SNOW_SWI          0.05   # CWH [-]   liquid water holding cap. of snow (HBV_PARA_04)
-:GlobalParameter ADIABATIC_LAPSE   6.0    # TCALT [C/km] temperature lapse rate   (HBV_PARA_13)
+:GlobalParameter ADIABATIC_LAPSE   6.5   # TCALT [C/km] temperature lapse rate   (HBV_PARA_13)
 :GlobalParameter PRECIP_LAPSE      0.0    # PCALT [mm/d/km] precip lapse rate     (HBV_PARA_12)
 
 # Required by Raven for models with more than one subbasin; used to estimate
@@ -97,7 +100,7 @@
   :Parameters,  MELT_FACTOR,  MIN_MELT_FACTOR,  HBV_MELT_FOR_CORR,  REFREEZE_FACTOR,  HBV_MELT_ASP_CORR
   :Units,            mm/d/K,           mm/d/K,               none,           mm/d/K,               none
   #           CFMAX (PARA_02),        (const),          MRF (PARA_18),   CFR (PARA_03),          AM (const)
-    [DEFAULT],          4.0,              2.2,                0.5,              2.0,               0.48
+    [DEFAULT],          2.5,              1.5,                0.5,              2.0,               0.48
 :EndLandUseParameterList
 
 :LandUseParameterList
