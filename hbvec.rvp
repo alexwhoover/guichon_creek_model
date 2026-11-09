@@ -28,10 +28,11 @@
 #   HBV FC [mm] = TOPSOIL thickness [m] x 1000 x POROSITY
 #   e.g. 1.0 m x 1000 x 0.20 = 200 mm.  Thickness is a calibration parameter
 #   (HBV_PARA_17). FAST_RES / SLOW_RES just need to be "big" (100 m).
+#   Calibration step 3: TOPSOIL 1.0 -> 2.0 m, so FC = 400 mm.
 #------------------------------------------------------------------------
 :SoilProfiles
     LAKE,       0
-    DEFAULT_P,  3,  TOPSOIL, 1.0,  FAST_RES, 100.0,  SLOW_RES, 100.0
+    DEFAULT_P,  3,  TOPSOIL, 2.0,  FAST_RES, 100.0,  SLOW_RES, 100.0
 :EndSoilProfiles
 
 #------------------------------------------------------------------------
@@ -124,11 +125,19 @@
 # Calibration step 2 (response shape, 2026-11-09): KF 0.2->0.05, KS 0.05->0.02.
 # 144-run grid (TIME_CONC x1-4, KF, PERC 5-20, KS); longer TIME_CONC and
 # higher PERC both made the fit worse, so they stay as they were.
+#
+# Calibration step 3 (volume, 2026-11-09): LP 0.7->0.5, TOPSOIL 1.0->2.0 m
+# (FC 200->400 mm); BETA unchanged. 100-run grid (LP 0.3-0.7, BETA 1-5,
+# TOPSOIL 1.0-2.5 m). Chosen as a compromise, NOT zero bias: 08LG041 is
+# regulated (Mamit Lake dam, irrigation), and every set shows a ~60-75
+# point bias gap between the calibration and validation periods. Forcing
+# calibration-period bias to 0 drove validation bias to ~-55% and broke
+# the hydrograph shape. Chosen set: PBIAS +45% (cal) / -18% (val).
 #------------------------------------------------------------------------
 :SoilParameterList
   :Parameters,  POROSITY,  FIELD_CAPACITY,  SAT_WILT,  HBV_BETA,  MAX_CAP_RISE_RATE,  MAX_PERC_RATE,  BASEFLOW_COEFF,  BASEFLOW_N
   :Units,           none,            none,      none,      none,               mm/d,           mm/d,             1/d,        none
-    [DEFAULT],       0.2,             0.7,       0.0,       2.0,                1.0,            0.0,             0.0,         0.0
+    [DEFAULT],       0.2,             0.5,       0.0,       2.0,                1.0,            0.0,             0.0,         0.0
     FAST_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,            5.0,            0.05,         1.5
     SLOW_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,       _DEFAULT,            0.02,         1.0
 :EndSoilParameterList
