@@ -120,13 +120,17 @@
 #   FAST_RES  BASEFLOW_COEFF -> KF  [1/d] upper-zone recession        (PARA_09)
 #   FAST_RES  BASEFLOW_N     -> 1 + ALPHA (non-linearity)             (PARA_15)
 #   SLOW_RES  BASEFLOW_COEFF -> KS  [1/d] lower-zone recession        (PARA_10)
+#
+# Calibration step 2 (response shape, 2026-11-09): KF 0.2->0.05, KS 0.05->0.02.
+# 144-run grid (TIME_CONC x1-4, KF, PERC 5-20, KS); longer TIME_CONC and
+# higher PERC both made the fit worse, so they stay as they were.
 #------------------------------------------------------------------------
 :SoilParameterList
   :Parameters,  POROSITY,  FIELD_CAPACITY,  SAT_WILT,  HBV_BETA,  MAX_CAP_RISE_RATE,  MAX_PERC_RATE,  BASEFLOW_COEFF,  BASEFLOW_N
   :Units,           none,            none,      none,      none,               mm/d,           mm/d,             1/d,        none
     [DEFAULT],       0.2,             0.7,       0.0,       2.0,                1.0,            0.0,             0.0,         0.0
-    FAST_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,            5.0,             0.2,         1.5
-    SLOW_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,       _DEFAULT,            0.05,         1.0
+    FAST_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,            5.0,            0.05,         1.5
+    SLOW_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,       _DEFAULT,            0.02,         1.0
 :EndSoilParameterList
 
 #------------------------------------------------------------------------
