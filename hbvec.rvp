@@ -4,17 +4,22 @@
 #
 # Raven HBV-EC emulation - PARAMETER FILE
 #
-# Values below are STARTING VALUES (taken from the Alouette2 and Salmon_HBV
-# tutorials), NOT values for your basin. Most are found by calibration
-# against observed streamflow (e.g. with OSTRICH). The comment above each
-# value gives the classic HBV-EC parameter name / HBV_PARA_## index used
-# in the Salmon_HBV tutorial, so you can match them to the HBV literature.
 #------------------------------------------------------------------------
 
-#------------------------------------------------------------------------
-# Soil classes: TOPSOIL = HBV soil moisture box, FAST_RES = upper zone,
-# SLOW_RES = lower zone (conceptual stores, not real soils)
-#------------------------------------------------------------------------
+#========================================================================
+# GLOBAL PARAMETERS
+#========================================================================
+:GlobalParameter RAINSNOW_TEMP     0.5    # TT    [C]
+:GlobalParameter RAINSNOW_DELTA    2.0    # TTI   [C]
+:GlobalParameter SNOW_SWI          0.05   # CWH   [-]
+:GlobalParameter ADIABATIC_LAPSE   6.5    # TCALT [C/km]
+:GlobalParameter PRECIP_LAPSE      0.0    # PCALT [mm/d/km]
+:AvgAnnualRunoff   28                     # mm/yr, 08LG041 1982-2011 mean
+
+#========================================================================
+# SOIL
+#========================================================================
+# Conceptual stores: TOPSOIL = soil box, FAST_RES = upper zone, SLOW_RES = lower zone
 :SoilClasses
   :Attributes,
   :Units,
@@ -23,31 +28,35 @@
     SLOW_RES
 :EndSoilClasses
 
-#------------------------------------------------------------------------
-# Soil profiles: name, #layers, {class, thickness [m]} x layers
-#   HBV FC [mm] = TOPSOIL thickness [m] x 1000 x POROSITY
-#   e.g. 1.0 m x 1000 x 0.20 = 200 mm.  Thickness is a calibration parameter
-#   (HBV_PARA_17). FAST_RES / SLOW_RES just need to be "big" (100 m).
-#   Calibration step 3: TOPSOIL 1.0 -> 2.0 m, so FC = 400 mm.
-#------------------------------------------------------------------------
+# FC [mm] = TOPSOIL thickness [m] x 1000 x POROSITY  (2.0 x 1000 x 0.2 = 400 mm)
 :SoilProfiles
     LAKE,       0
     DEFAULT_P,  3,  TOPSOIL, 2.0,  FAST_RES, 100.0,  SLOW_RES, 100.0
 :EndSoilProfiles
 
-#------------------------------------------------------------------------
-# Vegetation (only used weakly in HBV-EC)
-#------------------------------------------------------------------------
+# Soil / runoff generation (HBV names):
+#   FIELD_CAPACITY = LP, HBV_BETA = BETA, MAX_CAP_RISE_RATE = CFLUX
+#   FAST_RES: MAX_PERC_RATE = PERC, BASEFLOW_COEFF = KF, BASEFLOW_N = 1+ALPHA
+#   SLOW_RES: BASEFLOW_COEFF = KS
+:SoilParameterList
+  :Parameters,  POROSITY,  FIELD_CAPACITY,  SAT_WILT,  HBV_BETA,  MAX_CAP_RISE_RATE,  MAX_PERC_RATE,  BASEFLOW_COEFF,  BASEFLOW_N
+  :Units,           none,            none,      none,      none,               mm/d,           mm/d,             1/d,        none
+    [DEFAULT],       0.2,             0.5,       0.0,       2.0,                1.0,            0.0,             0.0,         0.0
+    FAST_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,            5.0,            0.05,         1.5
+    SLOW_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,       _DEFAULT,            0.02,         1.0
+:EndSoilParameterList
+
+#========================================================================
+# VEGETATION
+#========================================================================
+# Mixed classes = f x forest (25 m, LAI 6) + (1-f) x open (0.5 m, LAI 1)
+#   OPEN_VEG     0% forest   SB1 bands (HRUs 2-5)
+#   MIX20_VEG   20% forest   SB2 bands (HRUs 7-11)
+#   SITE_PRE_VEG 50% forest  solar site pre-project (HRUs 1, 6)
+#   SOLAR_VEG    0% forest   solar site post-project
 :VegetationClasses
   :Attributes,  MAX_HT,  MAX_LAI,  MAX_LEAF_COND
   :Units,            m,     none,       mm_per_s
-  # Pre-project conditions (assumed, 2026-11-09):
-  #   OPEN_VEG     : 0% forest  - SB1 elevation bands (HRUs 2-5)
-  #   MIX20_VEG    : 20% forest - SB2 elevation bands (HRUs 7-11)
-  #   SITE_PRE_VEG : 50% forest - solar site (HRUs 1, 6), both runs at t=0
-  # Post-project (solar run only, applied to SOLAR_SITE):
-  #   SOLAR_VEG    : 0% forest  - cleared site under panels
-  # Mixed values = f x forest (25 m, LAI 6) + (1 - f) x open (0.5 m, LAI 1)
     OPEN_VEG,      0.5,      1.0,            5.3
     MIX20_VEG,     5.4,      2.0,            5.3
     SITE_PRE_VEG, 12.75,     3.5,            5.3
@@ -63,44 +72,23 @@
     SOLAR_VEG,         10000,              10000
 :EndVegetationParameterList
 
-#------------------------------------------------------------------------
-# Land use classes
-#   IMPERM     = impervious fraction (0 for natural basins)
-#   FOREST_COV = forest fraction of the HRU (scales the HBV forest melt correction)
-#   Keep FOREST_COV consistent with the matching vegetation class above.
-#------------------------------------------------------------------------
+#========================================================================
+# LAND USE
+#========================================================================
+# FOREST_COV must match the vegetation class above
 :LandUseClasses
   :Attributes,  IMPERM,  FOREST_COV
   :Units,         frac,        frac
     OPEN_LU,       0.0,         0.0
     MIX20_LU,      0.0,         0.2
     SITE_PRE_LU,   0.0,         0.5
-    SOLAR,         0.0,         0.0    # >>> IMPERM 0 for now: forest-removal effect only
+    SOLAR,         0.0,         0.0    # IMPERM 0: forest-removal effect only
 :EndLandUseClasses
 
-#------------------------------------------------------------------------
-# Global parameters
-#------------------------------------------------------------------------
-# Calibration step 1 (snow timing, 2026-11-09): TT 0.0->0.5, TCALT 6.0->6.5,
-# CFMAX 4.0->2.5, MIN_MELT 2.2->1.5. Grid search over 72 runs; chosen on
-# volume-independent fit (r 0.70->0.79, volume-matched NSE 0.24->0.42).
-:GlobalParameter RAINSNOW_TEMP     0.5    # TT  [C]   rain/snow threshold        (HBV_PARA_01)
-:GlobalParameter RAINSNOW_DELTA    2.0    # TTI [C]   width of rain/snow mix zone (usually fixed)
-:GlobalParameter SNOW_SWI          0.05   # CWH [-]   liquid water holding cap. of snow (HBV_PARA_04)
-:GlobalParameter ADIABATIC_LAPSE   6.5   # TCALT [C/km] temperature lapse rate   (HBV_PARA_13)
-:GlobalParameter PRECIP_LAPSE      0.0    # PCALT [mm/d/km] precip lapse rate     (HBV_PARA_12)
-
-# Required by Raven for models with more than one subbasin; used to estimate
-# reference flows. 08LG041 mean flow 1982-10 to 2011-09 = 0.72 m3/s over 805.8 km2.
-:AvgAnnualRunoff   28                     # mm/yr
-
-#------------------------------------------------------------------------
-# Snow melt parameters (POTMELT_HBV)
-#------------------------------------------------------------------------
+# Snow melt (POTMELT_HBV): CFMAX, MIN_MELT, MRF, CFR, AM
 :LandUseParameterList
   :Parameters,  MELT_FACTOR,  MIN_MELT_FACTOR,  HBV_MELT_FOR_CORR,  REFREEZE_FACTOR,  HBV_MELT_ASP_CORR
   :Units,            mm/d/K,           mm/d/K,               none,           mm/d/K,               none
-  #           CFMAX (PARA_02),        (const),          MRF (PARA_18),   CFR (PARA_03),          AM (const)
     [DEFAULT],          2.5,              1.5,                0.5,              2.0,               0.48
 :EndLandUseParameterList
 
@@ -108,47 +96,11 @@
   :Parameters,  LAKE_REL_COEFF
   :Units,                  1/d
     [DEFAULT],             0.0
-  :EndLandUseParameterList
+:EndLandUseParameterList
 
-#------------------------------------------------------------------------
-# Soil / runoff-generation parameters
-#   POROSITY         -> sets HBV FC together with TOPSOIL thickness   (PARA_05)
-#   FIELD_CAPACITY   -> HBV LP, fraction of FC above which ET = PET   (PARA_06)
-#   SAT_WILT         -> wilting fraction                              (PARA_14)
-#   HBV_BETA         -> BETA, shape of runoff-generation curve        (PARA_07)
-#   MAX_CAP_RISE_RATE-> CFLUX [mm/d] capillary rise                   (PARA_16)
-#   FAST_RES  MAX_PERC_RATE  -> PERC [mm/d]                           (PARA_08)
-#   FAST_RES  BASEFLOW_COEFF -> KF  [1/d] upper-zone recession        (PARA_09)
-#   FAST_RES  BASEFLOW_N     -> 1 + ALPHA (non-linearity)             (PARA_15)
-#   SLOW_RES  BASEFLOW_COEFF -> KS  [1/d] lower-zone recession        (PARA_10)
-#
-# Calibration step 2 (response shape, 2026-11-09): KF 0.2->0.05, KS 0.05->0.02.
-# 144-run grid (TIME_CONC x1-4, KF, PERC 5-20, KS); longer TIME_CONC and
-# higher PERC both made the fit worse, so they stay as they were.
-#
-# Calibration step 3 (volume, 2026-11-09): LP 0.7->0.5, TOPSOIL 1.0->2.0 m
-# (FC 200->400 mm); BETA unchanged. 100-run grid (LP 0.3-0.7, BETA 1-5,
-# TOPSOIL 1.0-2.5 m). Chosen as a compromise, NOT zero bias: 08LG041 is
-# regulated (Mamit Lake dam, irrigation), and every set shows a ~60-75
-# point bias gap between the calibration and validation periods. Forcing
-# calibration-period bias to 0 drove validation bias to ~-55% and broke
-# the hydrograph shape. Chosen set: PBIAS +45% (cal) / -18% (val).
-#------------------------------------------------------------------------
-:SoilParameterList
-  :Parameters,  POROSITY,  FIELD_CAPACITY,  SAT_WILT,  HBV_BETA,  MAX_CAP_RISE_RATE,  MAX_PERC_RATE,  BASEFLOW_COEFF,  BASEFLOW_N
-  :Units,           none,            none,      none,      none,               mm/d,           mm/d,             1/d,        none
-    [DEFAULT],       0.2,             0.5,       0.0,       2.0,                1.0,            0.0,             0.0,         0.0
-    FAST_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,            5.0,            0.05,         1.5
-    SLOW_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,       _DEFAULT,            0.02,         1.0
-:EndSoilParameterList
-
-#------------------------------------------------------------------------
-# SCENARIO: solar site land-cover change
-#   baseline run : keep the two lines below COMMENTED OUT
-#   solar run    : UNCOMMENT them
-# Dated before :StartDate, so Raven applies the change at t = 0 and both
-# runs use identical forcings, initial conditions and parameters; only the
-# SOLAR_SITE HRUs (1, 6) differ: SITE_PRE (50% forest) -> SOLAR (0% forest).
-#------------------------------------------------------------------------
+#========================================================================
+# SCENARIO: comment out for baseline, uncomment for solar run.
+# Applied at t=0 to SOLAR_SITE HRUs (1, 6): 50% forest -> 0% forest.
+#========================================================================
 #:LandUseChange    SOLAR_SITE  SOLAR      1900-01-01
 #:VegetationChange SOLAR_SITE  SOLAR_VEG  1900-01-01

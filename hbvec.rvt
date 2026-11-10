@@ -9,9 +9,9 @@
   # ECCC HIGHLAND VALLEY LORNEX, Climate ID 1123469 (gaps filled from KAMLOOPS A)
   :Latitude     50.4667
   :Longitude    -121.0167
-  :Elevation    1268.0      # m - matters: temperature & precip are lapsed from here to each HRU
+  :Elevation    1268.0
 
-  # Gauge under-catch corrections (calibrated multipliers, start at 1.0)
+  # Gauge under-catch corrections
   :RainCorrection   1.0     # RFCF (HBV_PARA_20)
   :SnowCorrection   1.0     # SFCF (HBV_PARA_21)
 

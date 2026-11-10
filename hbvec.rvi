@@ -1,12 +1,7 @@
 #########################################################################
 :FileType          rvi ASCII Raven 4.1
-:WrittenBy         HBV-EC template (from Raven Manual v4.1 App. F.2 + Alouette2 / Salmon_HBV tutorials)
+:WrittenBy         HBV-EC template (from Raven Manual v4.1 App. F.2 + NHC Presentation)
 :CreationDate      2026-11-06
-#
-# Raven HBV-EC emulation - MAIN INPUT FILE
-# Run with:   Raven.exe hbvec -o output/
-#
-# Lines marked  >>> TODO  must be changed for your watershed.
 #------------------------------------------------------------------------
 
 #------------------------------------------------------------------------
@@ -17,19 +12,17 @@
 :StartDate             1982-10-01 00:00:00
 :EndDate               2011-09-30 00:00:00
 :TimeStep              1.0                    # daily (HBV-EC is a daily model)
-# (:EvaluationPeriod lines are below :SoilModel - Raven ignores them if placed earlier)
 
 #------------------------------------------------------------------------
-# Model options (standard HBV-EC set - do not change for a strict emulation)
+# Model options
 #------------------------------------------------------------------------
 :Method                     ORDERED_SERIES
 :Interpolation              INTERP_NEAREST_NEIGHBOR
 
-:Routing                    ROUTE_NONE               # v1: no in-channel routing; SB1 outflow passed straight to SB2
-#:Routing                   ROUTE_DIFFUSIVE_WAVE     # later: uses the :ChannelProfile blocks in .rvp
-:CatchmentRoute             ROUTE_TRI_CONVOLUTION    # HBV MAXBAS triangular weighting
+:Routing                    ROUTE_NONE
+:CatchmentRoute             ROUTE_TRI_CONVOLUTION
 
-:Evaporation                PET_FROMMONTHLY          # needs :MonthlyAveEvaporation + :MonthlyAveTemperature in .rvt
+:Evaporation                PET_FROMMONTHLY
 :OW_Evaporation             PET_FROMMONTHLY
 :SWRadiationMethod          SW_RAD_DEFAULT
 :SWCloudCorrect             SW_CLOUD_CORR_NONE
@@ -46,8 +39,6 @@
 
 :SoilModel                  SOIL_MULTILAYER 3
 
-# Diagnostics only over these windows (spin-up year excluded).
-# Calibrate on one, validate on the other. Must come after :SoilModel.
 :EvaluationPeriod  CALIBRATION  1983-10-01  1999-09-30
 :EvaluationPeriod  VALIDATION   1999-10-01  2011-09-30
 
@@ -63,7 +54,7 @@
 :DefineHRUGroups SB1_HRUs, SB2_HRUs, SOLAR_SITE
 
 #------------------------------------------------------------------------
-# Hydrologic processes - HBV-EC (Raven Manual v4.1, Appendix F.2)
+# Hydrologic processes - HBV-EC (Raven Manual v4.1, Appendix F.2, with NHC Lake Edit)
 #------------------------------------------------------------------------
 :HydrologicProcesses
   :SnowRefreeze       FREEZE_DEGREE_DAY   SNOW_LIQ        SNOW
@@ -89,6 +80,5 @@
 # Output options
 #------------------------------------------------------------------------
 :EvaluationMetrics   NASH_SUTCLIFFE  KLING_GUPTA  PCT_BIAS  RMSE
-:WriteForcingFunctions          # writes ForcingFunctions.csv - check PET/temp/precip look sane
-:CustomOutput DAILY AVERAGE SNOW BY_HRU   # SWE [mm] per HRU: melt-out should stagger with elevation band
-#:CreateRVPTemplate             # uncomment once to have Raven list every parameter it needs
+:WriteForcingFunctions
+:CustomOutput DAILY AVERAGE SNOW BY_HRU

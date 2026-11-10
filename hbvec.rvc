@@ -4,8 +4,5 @@
 #
 # Raven HBV-EC emulation - INITIAL CONDITIONS
 #
-# Intentionally empty: all storages and flows start at 0 and the one-year
-# spin-up (before the first :EvaluationPeriod in the .rvi) brings them to
-# realistic levels. Raven still expects this file to exist, so keep it.
 #------------------------------------------------------------------------
 :InitialReservoirStage 2 0.1

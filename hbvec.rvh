@@ -3,35 +3,20 @@
 :CreationDate      2026-11-06
 #
 # Raven HBV-EC emulation - WATERSHED / HRU FILE
-#
-# Layout used here: TWO subbasins, each split into elevation-band HRUs plus
-#   one solar-footprint HRU (never merged into a band). 11 HRUs total.
-#
-# Everything in this file comes from GIS (DEM + land cover + basin outline).
 #------------------------------------------------------------------------
 
 #------------------------------------------------------------------------
 # Subbasins (from GIS delineation, 2026-11-09)
 #   1 Guichon_BelowSolar : 185.05 km2, outlet just below the solar site (main output)
 #   2 Guichon_08LG041    : 620.72 km2 incremental, outlet = WSC 08LG041 (calibration)
-#   REACH_LENGTH = channelized longest flow path from GIS [km]
-#   PROFILE      = channel cross-section/slope/Manning's n, defined in hbvec.rvp
 #------------------------------------------------------------------------
 :SubBasins
-  :Attributes   NAME                 DOWNSTREAM_ID   PROFILE          REACH_LENGTH   GAUGED
-  :Units        none                 none            none             km             none
-  1,            Guichon_BelowSolar,  2,              CHAN_GUICHON_1,  31.983,        1
-  2,            Guichon_08LG041,     -1,             CHAN_GUICHON_2,  69.797,        1
+  :Attributes   NAME                 DOWNSTREAM_ID   REACH_LENGTH   GAUGED
+  :Units        none                 none            km             none
+  1,            Guichon_BelowSolar,  2,              31.983,        1
+  2,            Guichon_08LG041,     -1,             69.797,        1
 :EndSubBasins
 
-#------------------------------------------------------------------------
-# Subbasin in-catchment routing (HBV MAXBAS, triangular unit hydrograph)
-#   TIME_CONC    = HBV MAXBAS [d]: all in-subbasin delay (hillslope + channel)
-#   TIME_TO_PEAK = TIME_CONC / 2 [d] (symmetric triangle, as in HBV MAXBAS)
-#   Calibration parameters. Starting values typical for 100-1000 km2 basins.
-#   GIS channel Tc (SB1 4.50 h = 0.19 d, SB2 13.68 h = 0.57 d) was too short
-#   to delay anything at a daily step, so it is not used here.
-#------------------------------------------------------------------------
 :SubBasinProperties
   :Parameters,   TIME_CONC,   TIME_TO_PEAK
   :Units     ,           d,              d
@@ -39,31 +24,6 @@
              2,        3.0,            1.5
 :EndSubBasinProperties
 
-#------------------------------------------------------------------------
-# HRUs
-#   IDs = HRU_ID field of data/delineation_copy/hrus_final.shp
-#   Bands: 1 <1000, 2 1000-1200, 3 1200-1400, 4 1400-1600, 5 1600+ m; solar = BAND 0
-#   SB1: 1 solar, 2-5 bands 2-5 (SB1 has no land below 1000 m)
-#   SB2: 6 solar, 7-11 bands 1-5
-# Pre-project classes: OPEN (0% forest) all SB1 bands; MIX20 (20% forest) all
-# SB2 bands; SITE_PRE (50% forest) solar HRUs 1, 6. The solar run switches
-# HRUs 1 and 6 to SOLAR / SOLAR_VEG via :LandUseChange / :VegetationChange.
-#
-# Source: data/scripts/hru_attributes_arcpy.py -> data/processed/hru_attributes.csv
-#   (2026-11-09; DEM = MRDEM30_dtm.tif, 30 m)
-#   AREA       km2  polygon area in EPSG:3005. Totals: SB1 184.813, SB2 620.163
-#                   (0.15% / 0.10% below the subbasin polygons: raster stair-step
-#                   slivers at the watershed edge; negligible)
-#   ELEVATION  m    zonal mean of DEM. OROCORR_HBV lapses temperature and
-#                   precip from the gauge elevation (1268 m) to this value.
-#   LATITUDE / LONGITUDE  deg  inside point (Feature To Point, INSIDE), WGS84
-#   SLOPE / ASPECT  set to 0 (flat). They only feed the HBV aspect melt
-#                   correction. Each band is a ring around the whole basin
-#                   containing all aspects, so its mean aspect is meaningless;
-#                   SLOPE = 0 turns the correction off. If HRUs are ever split
-#                   by aspect, Raven aspect is counter-clockwise from N (W = 90):
-#                   degrees(atan2(-sin_mean, cos_mean)) % 360
-#------------------------------------------------------------------------
 :HRUs
   :Attributes  AREA     ELEVATION  LATITUDE  LONGITUDE  BASIN_ID  LAND_USE_CLASS  VEG_CLASS    SOIL_PROFILE  AQUIFER_PROFILE  TERRAIN_CLASS  SLOPE  ASPECT
   :Units       km2      m          deg       deg        none      none            none         none          none             none           deg    deg
@@ -83,18 +43,13 @@
 :EndHRUs
 
 :Reservoir Mamit_Lake
-  :SubBasinID 2
-  :WeirCoefficient  0.6 # Guess
-  :CrestWidth 10.0 # Guess
-  :MaxDepth 5.0 # Guess
-  :LakeArea 2030000.0 # From GIS
+  :SubBasinID        2
+  :WeirCoefficient   0.6         # Guess
+  :CrestWidth        10.0        # Guess
+  :MaxDepth          5.0         # Guess
+  :LakeArea          2030000.0   # From GIS
 :EndReservoir
 
-#------------------------------------------------------------------------
-# HRU group membership (groups are declared in hbvec.rvi)
-#   SB1_HRUs / SB2_HRUs : HBV-EC shared upper/lower zones, one pair per subbasin
-#   SOLAR_SITE          : HRUs whose land cover changes in the solar run
-#------------------------------------------------------------------------
 :HRUGroup SB1_HRUs
   1,2,3,4,5
 :EndHRUGroup
