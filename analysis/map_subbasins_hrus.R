@@ -53,12 +53,15 @@ sb$label <- sprintf("%s\n%.1f km²", sb_name[as.character(sb$sb)], sb$area)
 pts <- st_transform(st_as_sf(data.frame(
   label = c("WSC 08LG056\n(natural flow; calibration)", "WSC 08LG041\n(regulated; check only)"),
   lon = c(-120.91086, -120.80994), lat = c(50.60783, 50.36111)), coords = c("lon", "lat"), crs = 4326), crs)
-# Subbasin 1 outlet: where subbasins 1 and 2 meet, nearest the solar HRUs
-edge   <- st_intersection(st_boundary(sb[sb$sb == 1, ]), st_boundary(sb[sb$sb == 2, ]))
-solar  <- st_union(hru[hru$HRU_ID %in% c(1, 6), ])
-outlet <- st_nearest_points(solar, st_union(edge))
-outlet <- st_sf(label = "Subbasin 1 outlet\n(below solar site)",
-                geometry = st_cast(outlet, "POINT")[2])
+# Subbasin 1 outlet: where Guichon Creek crosses from subbasin 1 into subbasin 2, found as
+# the lowest DEM point on the boundary the two subbasins share (50.5184 N, 120.8576 W, 1052 m).
+# The CLRH river line crosses the boundary within 30 m of this point.
+sbf  <- st_transform(st_make_valid(st_read("data/delineation_copy/subbasins_final.shp", quiet = TRUE)), crs)
+edge <- suppressWarnings(st_intersection(st_boundary(sbf[1, ]), st_boundary(sbf[2, ])))
+ept  <- st_cast(st_line_sample(st_cast(st_union(edge), "LINESTRING"), density = 1 / 15), "POINT")
+dem  <- terra::rast("data/delineation_copy/MRDEM30_dtm.tif")
+ez   <- terra::extract(dem, terra::vect(st_transform(ept, terra::crs(dem))))[, 2]
+outlet <- st_sf(label = "Subbasin 1 outlet\n(Guichon Creek, below solar site)", geometry = ept[which.min(ez)])
 pts <- rbind(pts, st_transform(outlet, crs))
 pxy <- cbind(st_drop_geometry(pts), st_coordinates(pts))
 
@@ -101,7 +104,7 @@ p <- ggplot() +
   geom_point(data = pxy, aes(X, Y), shape = 21, size = 3.6, fill = ink, colour = surface, stroke = 1.1) +
   geom_label_repel(data = pxy, aes(X, Y, label = label), size = 2.9, colour = ink, lineheight = 0.95,
                    fill = surface, label.size = 0.2, label.padding = unit(0.25, "lines"),
-                   nudge_x = c(-10000, 11000, 4000), nudge_y = c(7500, -2500, -9500),
+                   nudge_x = c(-10000, 11000, 12000), nudge_y = c(7500, -2500, -11000),
                    segment.colour = ink, segment.size = 0.4, min.segment.length = 0, seed = 2) +
   geom_segment(data = sbl, aes(x = lx, y = ly, xend = X, yend = Y), colour = ink, linewidth = 0.4) +
   geom_point(data = sbl, aes(X, Y), shape = 16, size = 1.2, colour = ink) +
