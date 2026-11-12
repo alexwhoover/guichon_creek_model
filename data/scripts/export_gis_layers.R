@@ -1,7 +1,10 @@
 # Write the model's subbasins and HRUs (as in hbvec.rvh, including the split of subbasin 1
 # at WSC 08LG056) to a file geodatabase as two polygon feature classes:
-#   hrus_v3_08LG056        15 HRUs
-#   subbasins_v3_08LG056    3 subbasins
+#   hrus_v3_08LG056        HRUs in hbvec.rvh (15 until 2026-11-12; 9 after subbasin 2 was removed)
+#   subbasins_v3_08LG056   subbasins in hbvec.rvh (3, now 2)
+# Only HRUs and subbasins present in hbvec.rvh are written. NOTE: re-running this replaces the
+# current geodatabase layers (which still show subbasin 2, and had clipping slivers removed by
+# hand on 2026-11-12); the slivers along the 08LG056 boundary come back if this is re-run.
 #
 # Usage (from Raven/HBVEC_Model):
 #   Rscript data/scripts/export_gis_layers.R [path to .gdb]
@@ -48,6 +51,7 @@ tab  <- data.frame(HRU_ID = as.integer(g(1)), AREA_KM2 = as.numeric(g(2)), ELEV_
                    LAND_USE_CLASS = g(7), VEG_CLASS = g(8), SOIL_PROFILE = g(9),
                    SLOPE = as.numeric(g(12)), ASPECT = as.numeric(g(13)),
                    HRU_DESC = trimws(sub(".*#", "", rows)))
+hru <- hru[hru$HRU_ID %in% tab$HRU_ID, ]          # HRUs removed from the model are not exported
 stopifnot(setequal(tab$HRU_ID, hru$HRU_ID))
 
 sb_rows <- grep("^\\s+\\d+,\\s+Guichon_", rvh, value = TRUE)
@@ -60,7 +64,7 @@ tc <- lapply(strsplit(sub("#.*", "", tc_rows), ","), trimws)
 tct <- data.frame(SUBBASIN_ID = as.integer(sapply(tc, `[`, 1)), TIME_CONC_D = as.numeric(sapply(tc, `[`, 2)),
                   TIME_TO_PEAK_D = as.numeric(sapply(tc, `[`, 3)))
 sbt <- merge(sbt, tct, by = "SUBBASIN_ID")
-stopifnot(nrow(sbt) == 3)
+stopifnot(nrow(sbt) >= 1, all(tab$SUBBASIN_ID %in% sbt$SUBBASIN_ID))
 
 band <- function(d) ifelse(grepl("solar", d), "Solar site",
                     ifelse(grepl("<1000", d), "< 1000 m", ifelse(grepl("1000-1200", d), "1000-1200 m",
@@ -68,7 +72,7 @@ band <- function(d) ifelse(grepl("solar", d), "Solar site",
                     "1600 m and above")))))
 tab$ELEV_BAND <- band(tab$HRU_DESC)
 tab$SUBBASIN_NAME <- sbt$SUBBASIN_NAME[match(tab$SUBBASIN_ID, sbt$SUBBASIN_ID)]
-tab$SOLAR_SITE <- as.integer(tab$HRU_ID %in% c(1, 6))
+tab$SOLAR_SITE <- as.integer(tab$HRU_ID %in% c(1, 6))   # HRU 6 is no longer in the model
 tab$PCT_OF_SUBBASIN <- round(100 * tab$AREA_KM2 / ave(tab$AREA_KM2, tab$SUBBASIN_ID, FUN = sum), 2)
 
 # ---- measured in GIS -----------------------------------------------------------

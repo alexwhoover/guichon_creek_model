@@ -9,7 +9,6 @@ best parameters back yourself (step 5).
 | Gauge | Model outlet | Flow | Role |
 |---|---|---|---|
 | WSC 08LG056, Guichon Creek above Tunkwa Lake Diversion (76 km²) | subbasin 3 | natural (RHBN reference station) | calibration target: KGE |
-| WSC 08LG041, Guichon Creek at outlet of Mamit Lake (870 km²) | subbasin 2 | regulated | not calibrated; reported as an independent check |
 
 The objective is KGE at 08LG056 for the CALIBRATION period, WY2005-2024 (2004-10-01 to
 2024-09-30): present-day conditions, which the solar project will act on. VALIDATION is
@@ -17,10 +16,11 @@ WY1982-2004. Both are set by `:EvaluationPeriod` in `hbvec.rvi`. 08LG056 has no 
 Oct 2011 to Jan 2013; Raven skips those days. KGE scores volume, variability and timing, and
 the gauge sits inside subbasin 1, upstream of the solar site.
 
-08LG041 is regulated and sits below Mamit Lake, whose outlet settings are guesses, so it is
-left out of the objective. Subbasin 2 stays in the model: part of the solar site (HRU 6)
-drains to it, and its fit shows whether the parameters carry over to the lower, drier part
-of the watershed.
+08LG041 (regulated, at the Mamit Lake outlet) was never part of the objective. Its subbasin
+(subbasin 2, with solar HRU 6 and the Mamit Lake reservoir) was removed from the model on
+2026-11-12, because it is downstream of the subbasin 1 outlet and adds nothing to the result.
+The 2026-11-12 calibration below was run before that, so its diagnostics still include
+08LG041 rows (`[2]`); removing subbasin 2 does not change subbasins 1 and 3.
 
 ## Parameters (12)
 
@@ -47,8 +47,7 @@ of the watershed.
 
 Left fixed on purpose: `POROSITY` (0.36, from the soil survey), `HBV_MELT_FOR_CORR` (drives the
 solar result), `HBV_MELT_ASP_CORR` (no effect while HRU
-slopes are 0), lapse rates, `TIME_CONC`, the Mamit Lake outlet settings (they only affect
-08LG041), and everything about the solar site.
+slopes are 0), lapse rates, `TIME_CONC`, and everything about the solar site.
 
 ## Files
 
@@ -88,7 +87,7 @@ Run everything from `HBVEC_Model\calib\`.
    in `OstOutput0.txt`; the best trial's input files are in `processor_0\best\`.
 
 5. **Use the result.** Look at `processor_0\best\calib_Diagnostics.csv` first: the VALIDATION
-   rows and all the 08LG041 rows (`[2]`) were not used in the calibration. If you accept it,
+   rows were not used in the calibration. If you accept it,
    copy `hbvec.rvp` and `hbvec.rvt` from `processor_0\best\` over the ones in `HBVEC_Model\`,
    then run the baseline and solar runs as usual. The copies have the same text as the
    originals with only the 13 numbers changed.
@@ -104,8 +103,6 @@ re-run `prepare.py` if any model file changed.
 - **Tunkwa Lake diversion.** 08LG056 is just upstream of a historic diversion out of Guichon
   Creek (WSC 08LG014, gauged 1919–1930). The model does not take any water out there. If the
   diversion still operates, flows at the subbasin 1 outlet are overstated in both runs.
-- **08LG041 is not constrained at all.** Expect the model to overpredict volume there, because
-  withdrawals and storage upstream of that gauge are not modelled.
 - **One gauge, higher ground.** The catchment above 08LG056 is mostly 1200–1750 m. The solar
   site (about 1215 m) and the rest of subbasin 1 are lower and drier, and the calibration
   assumes the same parameters hold there.

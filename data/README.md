@@ -6,10 +6,8 @@ Inputs for the Guichon Creek Raven HBV-EC model.
 data/
 ├── daymet/              Raven daily forcing (Tmax, Tmin, precip), one file per HRU. Read by hbvec.rvt
 │   └── met_daymet_hruNN.rvt   Daymet V4 R1, area-weighted mean over HRU NN
-├── obs_flow_daily.rvt   Raven observed flow at 08LG041 (subbasin 2). Read by hbvec.rvt
 ├── obs_flow_08LG056_daily.rvt   Raven observed flow at 08LG056 (subbasin 3). Read by hbvec.rvt
 ├── raw/                 Downloaded data, never edited by hand
-│   ├── 08LG041_daily_HYDAT.csv                  WSC 08LG041 daily flow + HYDAT symbols
 │   ├── 08LG056_daily_HYDAT.csv                  WSC 08LG056 daily flow + HYDAT symbols (1982 on)
 │   └── daymet/pt_NNNN.csv                       Daymet single-pixel downloads (git-ignored, ~300 MB)
 ├── processed/           Products of the scripts below
@@ -19,7 +17,6 @@ data/
 │   ├── hru_attributes.csv                       HRU attributes from GIS (source of the .rvh HRU table)
 │   └── hru_split_08LG056.csv                    HRU rows for the split of subbasin 1 at 08LG056
 └── scripts/
-    ├── get_obs_08LG041.py   download flow   -> raw/08LG041_daily_HYDAT.csv, obs_flow_daily.rvt
     ├── get_obs_08LG056.py   download flow   -> raw/08LG056_daily_HYDAT.csv, obs_flow_08LG056_daily.rvt
     ├── get_daymet.R         download Daymet at sample points over each HRU -> raw/daymet/, processed/daymet_points.csv
     ├── write_daymet_rvt.R   HRU means -> daymet/*.rvt, processed/daymet_hru_*.csv, ../hbvec.rvt
@@ -53,12 +50,15 @@ downloads, Kamloops A gap-fill, `met_daily.rvt`, its `hbvec.rvt`) is in `archive
 - **If the HRUs change** (new .rvh), re-run both scripts: the sample points and gauge locations
   come from the HRU polygons and the .rvh.
 
+Subbasin 2 (WSC 08LG041, regulated) was removed from the model on 2026-11-12; its observed-flow
+file, HYDAT download and script are in `archive/sb2/`. `daymet_points.csv` and `data/raw/daymet/`
+still cover its HRUs 6-11, but `write_daymet_rvt.R` writes gauges only for HRUs in `hbvec.rvh`.
+
 ## Rebuild everything
 
 Run these from `HBVEC_Model/`:
 
 ```
-python data/scripts/get_obs_08LG041.py
 python data/scripts/get_obs_08LG056.py
 Rscript data/scripts/get_daymet.R        # ~850 requests; skips points already covering START-END
 Rscript data/scripts/write_daymet_rvt.R  # rewrites hbvec.rvt, keeping its :RainCorrection/:SnowCorrection

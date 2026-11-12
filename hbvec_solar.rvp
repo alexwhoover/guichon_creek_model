@@ -5,7 +5,7 @@
 # Raven HBV-EC emulation - SOLAR (POST-PROJECT) SCENARIO PARAMETER FILE
 #
 # Identical to the baseline: every parameter comes from hbvec.rvp. The only addition is
-# the land-cover change for the solar site (HRU group SOLAR_SITE = HRUs 1 and 6):
+# the land-cover change for the solar site (HRU group SOLAR_SITE = HRU 1):
 #   MIX20_LU / MIX20_VEG (20% forest)  ->  SOLAR / SOLAR_VEG (0% forest, IMPERM 1.0)
 # IMPERM 1.0 is a worst-case screening assumption: all rain and melt on the site bypasses
 # the soil. Dated before :StartDate, so Raven applies it at t = 0 for the whole record.

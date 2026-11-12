@@ -14,7 +14,7 @@
 :GlobalParameter SNOW_SWI          0.05   # CWH   [-]
 :GlobalParameter ADIABATIC_LAPSE   6.5    # TCALT [C/km]
 :GlobalParameter PRECIP_LAPSE      0.0    # PCALT [mm/d/km]
-:AvgAnnualRunoff   34                     # mm/yr, 08LG041 WY1982-2024 mean (870.1 km2)
+:AvgAnnualRunoff   75                     # mm/yr, 08LG056 WY1982-2024 mean (76.06 km2)
 
 #========================================================================
 # SOIL
@@ -51,8 +51,7 @@
 # VEGETATION
 #========================================================================
 # Mixed classes = f x forest (25 m, LAI 6) + (1-f) x open (0.5 m, LAI 1)
-#   MIX20_VEG   20% forest   SB1 + SB3 (HRUs 2-5, 12-15) and solar site pre-project (HRUs 1, 6)
-#   MIX40_VEG   40% forest   SB2 bands (HRUs 7-11)
+#   MIX20_VEG   20% forest   SB1 + SB3 (HRUs 2-5, 12-15) and solar site pre-project (HRU 1)
 #   SOLAR_VEG    0% forest   solar site post-project
 # MAX_HT and MAX_LAI do not affect this HBV-EC setup (PRECIP_ICEPT_USER, PET_FROMMONTHLY,
 # SOILEVAP_HBV); forest effects act through FOREST_COV (interception and melt) only.
@@ -60,7 +59,6 @@
   :Attributes,  MAX_HT,  MAX_LAI,  MAX_LEAF_COND
   :Units,            m,     none,       mm_per_s
     MIX20_VEG,     5.4,      2.0,            5.3
-    MIX40_VEG,    10.3,      3.0,            5.3
     SOLAR_VEG,     0.5,      1.0,            5.3
 :EndVegetationClasses
 
@@ -68,7 +66,6 @@
   :Parameters,  MAX_CAPACITY,  MAX_SNOW_CAPACITY
   :Units,                 mm,                 mm
     MIX20_VEG,         10000,              10000
-    MIX40_VEG,         10000,              10000
     SOLAR_VEG,         10000,              10000
 :EndVegetationParameterList
 
@@ -80,7 +77,6 @@
   :Attributes,  IMPERM,  FOREST_COV
   :Units,         frac,        frac
     MIX20_LU,      0.0,         0.2
-    MIX40_LU,      0.0,         0.4
     SOLAR,         1.0,         0.0    # worst case: fully impervious, no forest
 :EndLandUseClasses
 

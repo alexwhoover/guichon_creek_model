@@ -5,4 +5,4 @@
 # Raven HBV-EC emulation - INITIAL CONDITIONS
 #
 #------------------------------------------------------------------------
-:InitialReservoirStage 2 0.1
+# (Mamit Lake reservoir and its :InitialReservoirStage removed with subbasin 2, 2026-11-12)

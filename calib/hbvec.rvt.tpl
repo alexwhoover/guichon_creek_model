@@ -63,72 +63,6 @@
   :RedirectToFile data/daymet/met_daymet_hru05.rvt
 :EndGauge
 
-:Gauge Daymet_HRU06
-  :Latitude     50.5383
-  :Longitude    -120.8299
-  :Elevation    1231.5      # = HRU elevation, so OROCORR_HBV applies no lapse
-  :RainCorrection   par_RFCF     # RFCF (HBV_PARA_20)
-  :SnowCorrection   par_SFCF     # SFCF (HBV_PARA_21)
-  :MonthlyAveTemperature,  -5.7,  -4.4,  -0.4,   3.4,   8.2,  11.5,  15.0,  14.7,  10.3,   4.2,  -2.3,  -6.8
-  :MonthlyAveEvaporation,  0.29,  0.54,  1.18,  2.16,  3.38,  4.12,  4.70,  4.01,  2.48,  1.13,  0.40,  0.21
-  :RedirectToFile data/daymet/met_daymet_hru06.rvt
-:EndGauge
-
-:Gauge Daymet_HRU07
-  :Latitude     50.4176
-  :Longitude    -120.8132
-  :Elevation    973.5      # = HRU elevation, so OROCORR_HBV applies no lapse
-  :RainCorrection   par_RFCF     # RFCF (HBV_PARA_20)
-  :SnowCorrection   par_SFCF     # SFCF (HBV_PARA_21)
-  :MonthlyAveTemperature,  -4.6,  -3.1,   1.2,   5.1,   9.9,  13.3,  16.8,  16.4,  11.8,   5.6,  -1.0,  -5.6
-  :MonthlyAveEvaporation,  0.31,  0.60,  1.33,  2.39,  3.66,  4.42,  5.02,  4.28,  2.66,  1.21,  0.44,  0.23
-  :RedirectToFile data/daymet/met_daymet_hru07.rvt
-:EndGauge
-
-:Gauge Daymet_HRU08
-  :Latitude     50.4618
-  :Longitude    -120.9062
-  :Elevation    1122.0      # = HRU elevation, so OROCORR_HBV applies no lapse
-  :RainCorrection   par_RFCF     # RFCF (HBV_PARA_20)
-  :SnowCorrection   par_SFCF     # SFCF (HBV_PARA_21)
-  :MonthlyAveTemperature,  -5.2,  -3.8,   0.3,   4.1,   8.9,  12.3,  15.7,  15.5,  11.0,   4.8,  -1.7,  -6.3
-  :MonthlyAveEvaporation,  0.30,  0.57,  1.25,  2.26,  3.50,  4.25,  4.84,  4.13,  2.56,  1.17,  0.42,  0.22
-  :RedirectToFile data/daymet/met_daymet_hru08.rvt
-:EndGauge
-
-:Gauge Daymet_HRU09
-  :Latitude     50.4520
-  :Longitude    -120.6199
-  :Elevation    1308.7      # = HRU elevation, so OROCORR_HBV applies no lapse
-  :RainCorrection   par_RFCF     # RFCF (HBV_PARA_20)
-  :SnowCorrection   par_SFCF     # SFCF (HBV_PARA_21)
-  :MonthlyAveTemperature,  -6.0,  -4.8,  -1.0,   2.7,   7.5,  10.8,  14.3,  14.0,   9.7,   3.8,  -2.7,  -7.2
-  :MonthlyAveEvaporation,  0.28,  0.53,  1.14,  2.09,  3.29,  4.02,  4.62,  3.95,  2.45,  1.12,  0.40,  0.21
-  :RedirectToFile data/daymet/met_daymet_hru09.rvt
-:EndGauge
-
-:Gauge Daymet_HRU10
-  :Latitude     50.5284
-  :Longitude    -120.6600
-  :Elevation    1484.5      # = HRU elevation, so OROCORR_HBV applies no lapse
-  :RainCorrection   par_RFCF     # RFCF (HBV_PARA_20)
-  :SnowCorrection   par_SFCF     # SFCF (HBV_PARA_21)
-  :MonthlyAveTemperature,  -6.7,  -5.6,  -2.0,   1.6,   6.4,   9.7,  13.1,  12.9,   8.7,   3.0,  -3.6,  -8.0
-  :MonthlyAveEvaporation,  0.27,  0.50,  1.06,  1.95,  3.12,  3.84,  4.44,  3.80,  2.36,  1.07,  0.38,  0.19
-  :RedirectToFile data/daymet/met_daymet_hru10.rvt
-:EndGauge
-
-:Gauge Daymet_HRU11
-  :Latitude     50.5328
-  :Longitude    -120.5893
-  :Elevation    1669.7      # = HRU elevation, so OROCORR_HBV applies no lapse
-  :RainCorrection   par_RFCF     # RFCF (HBV_PARA_20)
-  :SnowCorrection   par_SFCF     # SFCF (HBV_PARA_21)
-  :MonthlyAveTemperature,  -7.4,  -6.6,  -3.1,   0.3,   5.0,   8.3,  11.8,  11.6,   7.5,   2.0,  -4.5,  -8.9
-  :MonthlyAveEvaporation,  0.26,  0.46,  0.97,  1.80,  2.93,  3.63,  4.23,  3.63,  2.25,  1.02,  0.35,  0.18
-  :RedirectToFile data/daymet/met_daymet_hru11.rvt
-:EndGauge
-
 :Gauge Daymet_HRU12
   :Latitude     50.6167
   :Longitude    -120.9194
@@ -173,6 +107,5 @@
   :RedirectToFile data/daymet/met_daymet_hru15.rvt
 :EndGauge
 
-# Observed streamflow: WSC 08LG041 (subbasin 2, regulated) and 08LG056 (subbasin 3, natural)
-:RedirectToFile data/obs_flow_daily.rvt
+# Observed streamflow: WSC 08LG056 (subbasin 3, natural flow; calibration target)
 :RedirectToFile data/obs_flow_08LG056_daily.rvt

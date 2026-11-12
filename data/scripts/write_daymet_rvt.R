@@ -37,6 +37,12 @@ dir.create("data/daymet", showWarnings = FALSE)
 # ---- read and average the point series ---------------------------------------
 # Running sum per HRU (all points share Daymet's dates), which keeps memory small.
 pts <- read.csv("data/processed/daymet_points.csv")
+# Only the HRUs in hbvec.rvh get a gauge. daymet_points.csv still covers all 15 HRUs of the
+# original delineation (subbasin 2's HRUs 6-11 were removed from the model on 2026-11-12);
+# its point_ids must stay as they are, because they name the raw files in data/raw/daymet/.
+rvh_ids <- as.integer(sub(",.*", "", grep("^\\s+\\d+,\\s+[0-9.]+,\\s+[0-9.]+,\\s+[0-9.]+,\\s+-",
+                                          readLines("hbvec.rvh"), value = TRUE)))
+pts <- pts[pts$HRU_ID %in% rvh_ids, ]
 read_pt <- function(id) {
   f  <- sprintf("data/raw/daymet/pt_%04d.csv", id)
   ln <- readLines(f)
@@ -81,7 +87,7 @@ rvt  <- readLines("hbvec.rvt")
 rain <- unique(trimws(grep("^\\s*:RainCorrection", rvt, value = TRUE)))
 snow <- unique(trimws(grep("^\\s*:SnowCorrection", rvt, value = TRUE)))
 obs  <- grep("^:RedirectToFile data/obs_", rvt, value = TRUE)
-stopifnot(length(rain) == 1, length(snow) == 1, length(obs) == 2)   # one value shared by all gauges
+stopifnot(length(rain) == 1, length(snow) == 1, length(obs) >= 1)   # one value shared by all gauges
 corr <- paste0("  ", c(rain, snow))
 
 # ---- Hargreaves (1985) PET from Tmax, Tmin and extraterrestrial radiation ----
@@ -140,7 +146,7 @@ for (h in sort(loc$HRU_ID)) {
     sprintf("  :RedirectToFile %s", fn),
     ":EndGauge", "")
 }
-out <- c(out, "# Observed streamflow: WSC 08LG041 (subbasin 2, regulated) and 08LG056 (subbasin 3, natural)", obs)
+out <- c(out, "# Observed streamflow: WSC 08LG056 (subbasin 3, natural flow; calibration target)", obs)
 writeLines(out, "hbvec.rvt")
 write.csv(do.call(rbind, normals), "data/processed/daymet_hru_normals.csv", row.names = FALSE)
 cat("Wrote hbvec.rvt and", length(loc$HRU_ID), "files in data/daymet/\n")

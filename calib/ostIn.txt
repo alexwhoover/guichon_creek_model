@@ -8,7 +8,7 @@
 # processor_0\model\output\calib_Diagnostics.csv: KGE at WSC 08LG056 (subbasin 3, natural
 # flow) for the CALIBRATION period, 2004-10-01 to 2024-09-30 (WY2005-2024, present-day
 # conditions; set by :EvaluationPeriod in hbvec.rvi). Forcing: Daymet, one gauge per HRU.
-# WSC 08LG041 (subbasin 2, regulated) is not calibrated against; it is an independent check.
+# WSC 08LG041 (regulated) and its subbasin 2 were removed from the model on 2026-11-12.
 
 ProgramType         DDS
 ObjectiveFunction   GCOP

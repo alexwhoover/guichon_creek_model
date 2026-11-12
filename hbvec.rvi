@@ -8,7 +8,7 @@
 # Simulation period
 #------------------------------------------------------------------------
 # Forcing: Daymet V4 R1, one virtual gauge per HRU (hbvec.rvt), 1980-01 to 2024-12.
-# Flow (08LG041, 08LG056): 1982-01 to 2024-12 (08LG056 has no data Oct 2011 - Jan 2013).
+# Flow (08LG056): 1982-01 to 2024-12 (no data Oct 2011 - Jan 2013).
 # Water years Oct-Sep. First water year (WY1981, 1980-10 to 1981-09) is spin-up only.
 :StartDate             1980-10-01 00:00:00
 :EndDate               2024-09-30 00:00:00
@@ -55,7 +55,7 @@
 #------------------------------------------------------------------------
 # HRU groups (members are listed in hbvec.rvh)
 #------------------------------------------------------------------------
-:DefineHRUGroups SB1_HRUs, SB2_HRUs, SB3_HRUs, SOLAR_SITE
+:DefineHRUGroups SB1_HRUs, SB3_HRUs, SOLAR_SITE
 
 #------------------------------------------------------------------------
 # Hydrologic processes - HBV-EC (Raven Manual v4.1, Appendix F.2, with NHC Lake Edit)
