@@ -15,7 +15,8 @@ Build the simplest model that runs end to end, then add complexity one step at a
 | Item | Value |
 |---|---|
 | Subbasin 1 | Outlet on Guichon Creek just below the solar site. `DOWNSTREAM_ID = 2`. `GAUGED = 1` (main output). |
-| Subbasin 2 | Remainder to 08LG041, contains Mamit Lake. `DOWNSTREAM_ID = -1`. `GAUGED = 1` (calibration). |
+| Subbasin 2 | Remainder to 08LG041, contains Mamit Lake. `DOWNSTREAM_ID = -1`. `GAUGED = 1` (regulated gauge; timing check only). |
+| Subbasin 3 | CALIBRATION branch only. Headwater above WSC 08LG056 (76 km², natural flow, RHBN), split out of subbasin 1. `DOWNSTREAM_ID = 1`. `GAUGED = 1` (main calibration target). HRUs 12–15. |
 | Elevation range | ~800–1900 m |
 | Elevation bands | 1: <1000, 2: 1000–1200, 3: 1200–1400, 4: 1400–1600, 5: 1600+ (top merged; 1800–1900 is a sliver) |
 | Solar HRU | Footprint clipped to the watershed (~2.1 km²). Always its own HRU, never merged. `BAND = 0` in GIS. |
@@ -23,7 +24,7 @@ Build the simplest model that runs end to end, then add complexity one step at a
 | CRS | NAD83 BC Environment Albers (EPSG:3005) for all GIS work; WGS84 decimal degrees for HRU lat/lon |
 
 ## Naming conventions
-- **Subbasin IDs:** 1 = `Guichon_BelowSolar`, 2 = `Guichon_08LG041`
+- **Subbasin IDs:** 1 = `Guichon_BelowSolar`, 2 = `Guichon_08LG041`, 3 = `Guichon_08LG056`
 - **HRU IDs:** sequential 1…N, taken from the `HRU_ID` field of `data/delineation_copy/hrus_final.shp`. Solar HRUs are 1 (SB1) and 6 (SB2). Attributes come from `data/scripts/hru_attributes_arcpy.py` → `data/processed/hru_attributes.csv`.
 - **Baseline classes (v1, all HRUs):** `DEFAULT_LU`, `DEFAULT_VEG`, `DEFAULT_P`
 - **Scenario classes:** `SOLAR` (land use) and `SOLAR_VEG` (vegetation)
@@ -53,14 +54,16 @@ Build the simplest model that runs end to end, then add complexity one step at a
 
 ## Run commands
 ```
-Raven.exe Guichon -o output\ -r baseline
-Raven.exe Guichon -o output\ -r solar
+Raven.exe hbvec -o output\ -r baseline
+Raven.exe hbvec -o output\ -r solar
 ```
 Outputs to compare: `<run>_Hydrographs.csv` (subbasin 1 for the answer, subbasin 2 against observed) and `<run>_Diagnostics.csv`.
 
 ## Calibration
 - **Parameters, roughly in order:** `RAINSNOW_TEMP`, `MELT_FACTOR` / `MIN_MELT_FACTOR`, `:RainCorrection` / `:SnowCorrection`, `HBV_BETA`, `FIELD_CAPACITY`, `BASEFLOW_COEFF` (fast and slow), `MAX_PERC_RATE`, `TIME_CONC`
-- **Method:** manual first, then OSTRICH if needed
+- **Method:** manual first, then OSTRICH (set up in `calib/`; see `calib/README.md`). Objective: 0.75 × KGE at 08LG056 + 0.25 × R² at 08LG041, CALIBRATION period.
+- **08LG041 is regulated.** Do not calibrate volume against it. 08LG056 is the natural-flow target.
+- **After editing any model file,** re-run `python prepare.py` in `calib/` so the OSTRICH templates match.
 - **Solar-site parameters are not calibrated.** The flow record cannot constrain `FOREST_COV`, `IMPERM` or interception for the site, so set them from literature or judgment and bracket them with low, central and high scenarios.
 
 ## Reference documents

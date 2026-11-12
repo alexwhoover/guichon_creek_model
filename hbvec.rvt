@@ -27,5 +27,8 @@
   :RedirectToFile data/met_daily.rvt
 :EndGauge
 
-# Observed streamflow at WSC 08LG041 = outlet of subbasin 2 (Guichon_08LG041)
+# Observed streamflow at WSC 08LG041 = outlet of subbasin 2 (Guichon_08LG041); regulated
 :RedirectToFile data/obs_flow_daily.rvt
+
+# Observed streamflow at WSC 08LG056 = outlet of subbasin 3 (Guichon_08LG056); natural flow
+:RedirectToFile data/obs_flow_08LG056_daily.rvt

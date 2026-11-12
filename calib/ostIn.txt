@@ -1,0 +1,81 @@
+# OSTRICH control file - Guichon Creek Raven HBV-EC calibration
+#
+# Run from calib\ :   python prepare.py     (builds templates + model\, checks this file)
+#                     Ostrich.exe
+#
+# Each trial, OSTRICH writes the three input files below from their templates into
+# processor_0\, runs Ost-RAVEN.bat there, and reads two scores from
+# processor_0\model\output\calib_Diagnostics.csv (CALIBRATION period, 1983-10-01 to 1999-09-30).
+
+ProgramType         DDS
+ObjectiveFunction   GCOP
+ModelExecutable     Ost-RAVEN.bat
+PreserveBestModel   save_best.bat
+
+ModelSubdir processor_
+
+BeginExtraDirs
+model
+EndExtraDirs
+
+BeginFilePairs
+  hbvec.rvp.tpl ; hbvec.rvp
+  hbvec.rvt.tpl ; hbvec.rvt
+  hbvec.rvh.tpl ; hbvec.rvh
+EndFilePairs
+
+# init = value in the model files when this was set up (prepare.py checks they still match).
+BeginParams
+  #parameter     init    low     high    tx_in  tx_ost  tx_out
+  par_TT         0.5     -1.0    2.5     none   none    none   # RAINSNOW_TEMP [C]
+  par_CFMAX      2.5     2.5     7.0     none   none    none   # MELT_FACTOR [mm/d/K]
+  par_MINFRAC    0.6     0.2     1.0     none   none    none   # MIN_MELT_FACTOR as a fraction of MELT_FACTOR
+  par_SFCF       1.0     0.8     1.5     none   none    none   # :SnowCorrection [-]
+  par_RFCF       1.0     0.8     1.3     none   none    none   # :RainCorrection [-]
+  par_THICK      2.0     0.3     2.0     none   none    none   # TOPSOIL thickness [m]; soil store = 360 mm per m
+  par_BETA       2.0     0.5     4.0     none   none    none   # HBV_BETA [-]
+  par_LP         0.5     0.5     0.9     none   none    none   # FIELD_CAPACITY (HBV LP) [-]
+  par_PERC       5.0     0.1     6.0     none   none    none   # MAX_PERC_RATE, fast -> slow reservoir [mm/d]
+  par_KF         0.05    0.01    0.5     none   none    none   # BASEFLOW_COEFF, fast reservoir [1/d]
+  par_BFN        1.5     1.0     3.0     none   none    none   # BASEFLOW_N, fast reservoir (1 + HBV ALPHA) [-]
+  par_KS         0.02    0.001   0.05    none   none    none   # BASEFLOW_COEFF, slow reservoir [1/d]
+  par_CRESTW     10.0    1.0     30.0    none   none    none   # Mamit Lake :CrestWidth [m] (affects 08LG041 only)
+EndParams
+
+# MIN_MELT_FACTOR = par_MINFRAC x par_CFMAX, so it can never exceed MELT_FACTOR.
+BeginTiedParams
+  # xtied = c3*x1*x2 + c2*x2 + c1*x1 + c0
+  par_CFMIN 2 par_CFMAX par_MINFRAC linear 1.00 0.00 0.00 0.00 free
+EndTiedParams
+
+# Diagnostics.csv columns: 1 series, 2 file, 3 NSE, 4 KGE, 5 PBIAS, 6 RMSE, 7 R2
+# (set by :EvaluationMetrics in hbvec.rvi). The keyword picks the row.
+BeginResponseVars
+  #name     filename                                 keyword                     line  col  token
+  KGE_56    .\model\output\calib_Diagnostics.csv ;   HYDROGRAPH_CALIBRATION[3]   0     4    ','
+  R2_41     .\model\output\calib_Diagnostics.csv ;   HYDROGRAPH_CALIBRATION[2]   0     7    ','
+EndResponseVars
+
+# Objective (OSTRICH minimizes): -(0.75 x KGE at 08LG056 + 0.25 x R2 at 08LG041)
+#   08LG056 is natural flow, so its KGE scores volume, variability and timing.
+#   08LG041 is regulated, so only its R2 is used: timing and shape, not volume.
+BeginTiedRespVars
+  NegObj 2 KGE_56 R2_41 wsum -0.75 -0.25
+EndTiedRespVars
+
+BeginGCOP
+  CostFunction    NegObj
+  PenaltyFunction APM
+EndGCOP
+
+BeginConstraints
+EndConstraints
+
+RandomSeed 20261112
+
+# Algorithm block must be last.
+BeginDDSAlg
+  PerturbationValue 0.20
+  MaxIterations     1000
+  UseInitialParamValues
+EndDDSAlg

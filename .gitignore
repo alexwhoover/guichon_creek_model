@@ -31,3 +31,13 @@ desktop.ini
 *Zone.Identifier
 ~$*
 *.tmp
+
+# OSTRICH calibration: generated folders, run outputs and the executable
+calib/model/
+calib/processor_*/
+calib/OstOutput*.txt
+calib/OstModel*.txt
+calib/OstErrors*.txt
+calib/OstExeOut*.txt
+calib/OstStatus*.txt
+calib/*.exe

@@ -51,7 +51,7 @@
 #------------------------------------------------------------------------
 # HRU groups (members are listed in hbvec.rvh)
 #------------------------------------------------------------------------
-:DefineHRUGroups SB1_HRUs, SB2_HRUs, SOLAR_SITE
+:DefineHRUGroups SB1_HRUs, SB2_HRUs, SB3_HRUs, SOLAR_SITE
 
 #------------------------------------------------------------------------
 # Hydrologic processes - HBV-EC (Raven Manual v4.1, Appendix F.2, with NHC Lake Edit)
@@ -79,6 +79,8 @@
 #------------------------------------------------------------------------
 # Output options
 #------------------------------------------------------------------------
-:EvaluationMetrics   NASH_SUTCLIFFE  KLING_GUPTA  PCT_BIAS  RMSE
+# OSTRICH reads KLING_GUPTA (column 4) and R2 (column 7) from Diagnostics.csv by position:
+# if this list is reordered, update calib/ostIn.txt to match.
+:EvaluationMetrics   NASH_SUTCLIFFE  KLING_GUPTA  PCT_BIAS  RMSE  R2
 :WriteForcingFunctions
 :CustomOutput DAILY AVERAGE SNOW BY_HRU
