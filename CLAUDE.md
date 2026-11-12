@@ -16,7 +16,7 @@ Build the simplest model that runs end to end, then add complexity one step at a
 |---|---|
 | Subbasin 1 | Outlet on Guichon Creek just below the solar site. `DOWNSTREAM_ID = 2`. `GAUGED = 1` (main output). |
 | Subbasin 2 | Remainder to 08LG041, contains Mamit Lake. `DOWNSTREAM_ID = -1`. `GAUGED = 1` (regulated gauge; not calibrated, reported as a check only). |
-| Subbasin 3 | CALIBRATION branch only. Headwater above WSC 08LG056 (76 km², natural flow, RHBN), split out of subbasin 1. `DOWNSTREAM_ID = 1`. `GAUGED = 1` (main calibration target). HRUs 12–15. |
+| Subbasin 3 | Headwater above WSC 08LG056 (76 km², natural flow, RHBN), split out of subbasin 1. `DOWNSTREAM_ID = 1`. `GAUGED = 1` (main calibration target). HRUs 12–15. |
 | Elevation range | ~800–1900 m |
 | Elevation bands | 1: <1000, 2: 1000–1200, 3: 1200–1400, 4: 1400–1600, 5: 1600+ (top merged; 1800–1900 is a sliver) |
 | Solar HRU | Footprint clipped to the watershed (~2.1 km²). Always its own HRU, never merged. `BAND = 0` in GIS. |
@@ -26,20 +26,30 @@ Build the simplest model that runs end to end, then add complexity one step at a
 ## Naming conventions
 - **Subbasin IDs:** 1 = `Guichon_BelowSolar`, 2 = `Guichon_08LG041`, 3 = `Guichon_08LG056`
 - **HRU IDs:** sequential 1…N, taken from the `HRU_ID` field of `data/delineation_copy/hrus_final.shp`. Solar HRUs are 1 (SB1) and 6 (SB2). Attributes come from `data/scripts/hru_attributes_arcpy.py` → `data/processed/hru_attributes.csv`.
-- **Baseline classes (v1, all HRUs):** `DEFAULT_LU`, `DEFAULT_VEG`, `DEFAULT_P`
+- **Land use / vegetation classes (pairs, by forest cover):** `OPEN_LU`/`OPEN_VEG` (0%, SB1 and SB3 bands), `MIX20_LU`/`MIX20_VEG` (20%, SB2 bands), `SITE_PRE_LU`/`SITE_PRE_VEG` (50%, solar site pre-project, HRUs 1 and 6). Soil profile `DEFAULT_P` for all HRUs.
 - **Scenario classes:** `SOLAR` (land use) and `SOLAR_VEG` (vegetation)
-- **HRU group:** `SOLAR_SITE`. Declare it in the .rvi with `:DefineHRUGroups` and populate it in the .rvh.
-- **Channel profile:** `CHAN_GUICHON`
+- **HRU groups:** `SB1_HRUs`, `SB2_HRUs`, `SB3_HRUs`, `SOLAR_SITE`. Declare them in the .rvi with `:DefineHRUGroups` and populate them in the .rvh.
+- **Channel profile:** none while `:Routing ROUTE_NONE` (`PROFILE = NONE` in `:SubBasins`). Use `CHAN_GUICHON` if channel routing is switched on.
+- **Met gauges:** `Daymet_HRUnn`, one per HRU (see Forcing below)
 - **Run names:** `baseline`, `solar` (with variants such as `solar_lo` / `solar_hi` for sensitivity)
 
 ## Model configuration decisions
 - **Template:** Raven manual v4.1, Appendix F.2 (HBV-EC), with these changes:
-  - `:Routing ROUTE_DIFFUSIVE_WAVE`. The template's `ROUTE_NONE` is for single-subbasin models only. This requires a `:ChannelProfile` in the .rvp.
+  - `:Routing ROUTE_NONE` with `:CatchmentRoute ROUTE_TRI_CONVOLUTION` (HBV MAXBAS-style triangular unit hydrograph in each subbasin, set by `TIME_CONC`/`TIME_TO_PEAK`). Raven warns that `ROUTE_NONE` is meant for one-subbasin models; this is accepted for now. Switching to `ROUTE_DIFFUSIVE_WAVE` would need a `:ChannelProfile` in the .rvp, its name in the `:SubBasins` PROFILE column, and subbasin 1's `REACH_LENGTH` shortened (it still includes the 17.3 km above 08LG056).
   - Delete the glacier lines: Flush→GLACIER and its conditional, `GlacierMelt`, and `GlacierRelease`.
   - Keep `:LakeStorage SLOW_RESERVOIR` (an HBV-EC quirk).
 - **Time step and periods:** daily. Include one spin-up year before the calibration period, and set it with `:EvaluationPeriod`.
-- **Metrics:** `:EvaluationMetrics NASH_SUTCLIFFE KLING_GUPTA PCT_BIAS`
-- **Scenario method:** put `:LandUseChange` and `:VegetationChange` for `SOLAR_SITE` at the bottom of the .rvp, dated `1900-01-01`. Because that is before `:StartDate`, Raven applies the change at t = 0, so both runs use identical forcings over the full record.
+- **Metrics:** `:EvaluationMetrics NASH_SUTCLIFFE KLING_GUPTA PCT_BIAS RMSE R2`. Evaluation periods: CALIBRATION 1983-10-01 to 1999-09-30, VALIDATION 1999-10-01 to 2011-09-30.
+- **Scenario method:** `:LandUseChange` and `:VegetationChange` for `SOLAR_SITE` sit at the bottom of the .rvp, dated `1900-01-01`, commented out for the baseline run and uncommented for the solar run. Because the date is before `:StartDate`, Raven applies the change at t = 0, so both runs use identical forcings over the full record.
+
+## Forcing (Daymet, since 2026-11-12)
+- **Source:** Daymet V4 R1, 1 km daily grid (Tmax, Tmin, precip), 1982-01-01 to 2011-12-31. It replaced the ECCC Highland Valley Lornex station (1123469), which reads low after about 1999 relative to the regional estimate. With unchanged parameters, Daymet raised KGE at 08LG056 from 0.40 to 0.75 over the full record (validation 0.05 to 0.64). Evidence: `analysis/compare_lornex_daymet.pdf`.
+- **Lornex is archived** in `archive/lornex/` (not tracked). It can still be run for comparison with `Raven.exe hbvec -t archive/lornex/hbvec_lornex.rvt -o output\ -r lornex`.
+- **Method:** `data/scripts/get_daymet.R` samples Daymet on a 2 km grid in each HRU (250 m for small HRUs) through the single-pixel API, because the NetCDF/THREDDS server needs a NASA Earthdata login. `data/scripts/write_daymet_rvt.R` averages the points per HRU and writes `hbvec.rvt` with one virtual gauge per HRU. Details: `data/README.md`.
+- **Virtual gauges sit at their HRU's exact lat/lon/elevation from the .rvh.** `INTERP_NEAREST_NEIGHBOR` then gives each HRU its own gauge, and `OROCORR_HBV` applies no lapse, which is right because Daymet already includes elevation effects. No NetCDF build of Raven is needed.
+- **If the HRUs or the .rvh change,** re-run both scripts so the sample points and gauge locations match.
+- **Gauge corrections:** every gauge carries the same `:RainCorrection` / `:SnowCorrection`. `write_daymet_rvt.R` keeps the values already in `hbvec.rvt`, so edit them there (all 15 gauges) and they survive a rebuild.
+- **The record ends in 2011** only to match the model period. Daymet covers 1980 to the present, so the period can be extended to use the 08LG056 and 08LG041 flow record through 2024.
 
 ## Raven gotchas (check these first when debugging)
 - **Aspect direction:** Raven measures aspect counter-clockwise from north (west = 90°). From GIS sine/cosine means, use `ASPECT = degrees(atan2(-sin_mean, cos_mean)) % 360`.
@@ -48,7 +58,10 @@ Build the simplest model that runs end to end, then add complexity one step at a
 - **Time intervals:** the interval in `:Data`, `:MultiData` and `:ObservationData` headers must be a decimal (e.g. `1.0`), not `hh:mm:ss`.
 - **HRU group order:** define HRU groups in the .rvi before populating them in the .rvh.
 - **RVP template:** add `:CreateRVPTemplate` to the .rvi, run once to generate a blank .rvp, then remove the line (the model will not run while it is present).
-- **Gauge elevation:** this must be correct, because `OROCORR_HBV` lapses temperature and precipitation from it to each HRU.
+- **`:SubBasins` columns are positional:** Raven reads `ID, NAME, DOWNSTREAM_ID, PROFILE, REACH_LENGTH, GAUGED` in that order and ignores `:Attributes`. Leaving out PROFILE shifts the columns, so no subbasin is gauged and Hydrographs.csv holds only precipitation (Diagnostics.csv still fills).
+- **Non-numeric values in time series:** Raven rejects `-0.00`. Round, then add 0, before formatting.
+- **Gauge elevation:** this must be correct, because `OROCORR_HBV` lapses temperature and precipitation from it to each HRU. For the Daymet gauges it equals the HRU elevation, so the lapse is zero.
+- **Daymet calendar:** Daymet omits Dec 31 in leap years. `write_daymet_rvt.R` fills it with Dec 30's temperatures and zero precip.
 - **PET inputs:** `PET_FROMMONTHLY` needs `:MonthlyAveTemperature` and `:MonthlyAveEvaporation` in the gauge block.
 - **After every run:** check `RavenErrors.txt` before looking at results.
 
@@ -61,12 +74,15 @@ Outputs to compare: `<run>_Hydrographs.csv` (subbasin 1 for the answer, subbasin
 
 ## Calibration
 - **Parameters, roughly in order:** `RAINSNOW_TEMP`, `MELT_FACTOR` / `MIN_MELT_FACTOR`, `:RainCorrection` / `:SnowCorrection`, `HBV_BETA`, `FIELD_CAPACITY`, `BASEFLOW_COEFF` (fast and slow), `MAX_PERC_RATE`, `TIME_CONC`
-- **Method:** manual first, then OSTRICH (set up in `calib/`; see `calib/README.md`). Objective: KGE at 08LG056, CALIBRATION period.
+- **Method:** manual first, then OSTRICH. Objective: KGE at 08LG056, CALIBRATION period.
+- **Current parameters were calibrated with Lornex forcing** (OSTRICH, 2026-11-12) and have not been recalibrated for Daymet. Recalibrating with Daymet is the next calibration step.
+- **The OSTRICH setup is archived** in `archive/calib/` (not tracked; see its `README.md`). To reuse it, move it back to `calib/` or change `ROOT` in `prepare.py` to two folders up. Then re-run `python prepare.py` after any model edit so the templates match. The `.rvt` template must now cover the corrections in all 15 Daymet gauges.
 - **08LG041 is regulated.** Do not calibrate against it; report its fit as an independent check. 08LG056 is the natural-flow target. Mamit Lake's outlet settings stay as uncalibrated guesses.
-- **After editing any model file,** re-run `python prepare.py` in `calib/` so the OSTRICH templates match.
 - **Solar-site parameters are not calibrated.** The flow record cannot constrain `FOREST_COV`, `IMPERM` or interception for the site, so set them from literature or judgment and bracket them with low, central and high scenarios.
 
 ## Reference documents
+- **`data/README.md`:** data folder layout, Daymet method, rebuild steps
+- **`analysis/compare_lornex_daymet.pdf`:** Lornex vs Daymet forcing comparison (why Daymet is used)
 - **`RavenUsersManual_v4.1.pdf`:**
   - App. F.2: HBV-EC template
   - App. A.3: .rvh format

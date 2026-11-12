@@ -1,8 +1,10 @@
 # Compare the Lornex-station run with the Daymet run (same model, same parameters).
+# This comparison is why Daymet replaced Lornex as the forcing (2026-11-12). The Lornex
+# pipeline is archived in archive/lornex/ (not tracked by git).
 #
 # Runs (from Raven/HBVEC_Model):
-#   Raven.exe hbvec -o output\ -r lornex
-#   Raven.exe hbvec -t hbvec_daymet.rvt -o output\ -r daymet
+#   Raven.exe hbvec -t archive/lornex/hbvec_lornex.rvt -o output\ -r lornex
+#   Raven.exe hbvec -o output\ -r daymet
 # Usage:  Rscript analysis/compare_lornex_daymet.R
 # Writes: analysis/compare_lornex_daymet.pdf
 #         analysis/compare_lornex_daymet_annual.csv (water-year forcing and flows)

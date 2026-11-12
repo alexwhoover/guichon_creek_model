@@ -7,8 +7,9 @@
 #------------------------------------------------------------------------
 # Simulation period
 #------------------------------------------------------------------------
-# Met (Lornex, 1967-01 to 2011-11) and flow (08LG041, 1982-01 to 2024-12) overlap
-# 1982-2011. Water years Oct-Sep. First water year (1982-83) is spin-up only.
+# Forcing: Daymet V4 R1, one virtual gauge per HRU (hbvec.rvt), downloaded for 1982-2011
+# (available 1980 on). Flow (08LG041, 08LG056): 1982-01 to 2024-12.
+# Water years Oct-Sep. First water year (1982-83) is spin-up only.
 :StartDate             1982-10-01 00:00:00
 :EndDate               2011-09-30 00:00:00
 :TimeStep              1.0                    # daily (HBV-EC is a daily model)
@@ -80,7 +81,7 @@
 # Output options
 #------------------------------------------------------------------------
 # OSTRICH reads KLING_GUPTA (column 4) from Diagnostics.csv by position:
-# if this list is reordered, update calib/ostIn.txt to match.
+# if this list is reordered, update ostIn.txt (archive/calib/) to match.
 :EvaluationMetrics   NASH_SUTCLIFFE  KLING_GUPTA  PCT_BIAS  RMSE  R2
 :WriteForcingFunctions
 :CustomOutput DAILY AVERAGE SNOW BY_HRU
