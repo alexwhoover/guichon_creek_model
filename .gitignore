@@ -37,3 +37,16 @@ archive/
 
 # Daymet single-pixel downloads (regenerate with data/scripts/get_daymet.R)
 data/raw/daymet/
+
+# OSTRICH calibration: generated folders, run outputs, executable and runtime DLLs
+calib/model/
+calib/processor_*/
+calib/OstOutput*.txt
+calib/OstModel*.txt
+calib/OstErrors*.txt
+calib/OstExeOut*.txt
+calib/OstStatus*.txt
+calib/*.exe
+calib/*.dll
+calib/OstDDS*.txt
+calib/ostrich_console.log
