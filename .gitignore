@@ -32,13 +32,5 @@ desktop.ini
 ~$*
 *.tmp
 
-# OSTRICH calibration: generated folders, run outputs and the executable
-calib/model/
-calib/processor_*/
-calib/OstOutput*.txt
-calib/OstModel*.txt
-calib/OstErrors*.txt
-calib/OstExeOut*.txt
-calib/OstStatus*.txt
-calib/*.exe
-calib/*.dll
+# Retired scripts, calibration runs and stale outputs (kept on disk, not tracked)
+archive/
