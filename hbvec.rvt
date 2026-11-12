@@ -12,8 +12,8 @@
   :Elevation    1268.0
 
   # Gauge under-catch corrections
-  :RainCorrection   1.0     # RFCF (HBV_PARA_20)
-  :SnowCorrection   1.0     # SFCF (HBV_PARA_21)
+  :RainCorrection   1.016     # RFCF (HBV_PARA_20)
+  :SnowCorrection   0.896     # SFCF (HBV_PARA_21)
 
   # Monthly normals AT THIS GAUGE (required by PET_FROMMONTHLY), Oct 1982 - Sep 2011,
   # from the gap-filled record (data/write_met_rvt.R -> data/lornex_monthly_normals.csv)
