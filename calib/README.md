@@ -55,7 +55,8 @@ slopes are 0), lapse rates, `TIME_CONC`, the Mamit Lake outlet settings (they on
 | `hbvec.rvp.tpl`, `hbvec.rvt.tpl` | Templates written by `prepare.py` (do not edit by hand) |
 | `Ost-RAVEN.bat` | Runs Raven for one trial |
 | `save_best.bat` | Keeps the best trial's files |
-| `Ostrich.exe` | OSTRICH v17.12.19, from `RavenOstrichTutorialFiles.zip` on the Raven downloads page (not in git) |
+| `Ostrich.exe` | OSTRICH v17.12.19 (32-bit), from `RavenOstrichTutorialFiles.zip` on the Raven downloads page (not in git) |
+| `msvcp120.dll`, `msvcr120.dll` | 32-bit Visual C++ 2013 runtime that `Ostrich.exe` needs. Copied from this PC's Microsoft Office folder (`...fs\ProgramFilesCommonX86\Microsoft Shared\Office16`). Not in git. Not needed if the Visual C++ 2013 x86 redistributable is installed |
 | `model\`, `processor_0\`, `Ost*.txt` | Created by `prepare.py` and OSTRICH (not in git) |
 
 ## Steps

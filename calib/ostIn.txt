@@ -11,8 +11,8 @@
 
 ProgramType         DDS
 ObjectiveFunction   GCOP
-ModelExecutable     Ost-RAVEN.bat
-PreserveBestModel   save_best.bat
+ModelExecutable     .\Ost-RAVEN.bat
+PreserveBestModel   .\save_best.bat
 
 ModelSubdir processor_
 
