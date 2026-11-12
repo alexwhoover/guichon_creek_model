@@ -23,6 +23,8 @@ data/
     ├── split_08LG056_subbasin.R   08LG056 catchment from the CLRH hydrofabric -> processed/hru_split_08LG056.csv,
     │                              delineation_copy/catchment_08LG056.shp
     ├── get_met_stations.R   download met    -> raw/<climate_id>_*_daily.csv  (weathercan)
+    ├── export_gis_layers.R  HRUs + subbasins as modelled, with attributes -> ArcGIS geodatabase
+    │                        (hrus_v3_08LG056, subbasins_v3_08LG056; close ArcGIS Pro first)
     ├── fill_met_lornex.R    fill Lornex gaps from Kamloops A (monthly linear scaling) -> processed/
     └── write_met_rvt.R      write met_daily.rvt + monthly normals
 ```
