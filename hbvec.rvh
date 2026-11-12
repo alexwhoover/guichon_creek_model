@@ -18,11 +18,11 @@
 # the 17.3 km above 08LG056, so shorten it if channel routing is switched on.
 #------------------------------------------------------------------------
 :SubBasins
-  :Attributes   NAME                 DOWNSTREAM_ID   REACH_LENGTH   GAUGED
-  :Units        none                 none            km             none
-  1,            Guichon_BelowSolar,  2,              31.983,        1
-  2,            Guichon_08LG041,     -1,             69.797,        1
-  3,            Guichon_08LG056,     1,              17.3,          1
+  :Attributes   NAME                 DOWNSTREAM_ID   PROFILE   REACH_LENGTH   GAUGED
+  :Units        none                 none            none      km             none
+  1,            Guichon_BelowSolar,  2,  NONE,              31.983,        1
+  2,            Guichon_08LG041,     -1,  NONE,             69.797,        1
+  3,            Guichon_08LG056,     1,  NONE,              17.3,          1
 :EndSubBasins
 
 :SubBasinProperties
