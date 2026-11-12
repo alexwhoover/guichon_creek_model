@@ -34,3 +34,6 @@ desktop.ini
 
 # Retired scripts, calibration runs and stale outputs (kept on disk, not tracked)
 archive/
+
+# Daymet single-pixel downloads (regenerate with data/scripts/get_daymet.R)
+data/raw/daymet/
