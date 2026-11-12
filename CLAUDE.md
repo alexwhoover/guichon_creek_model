@@ -26,8 +26,8 @@ Build the simplest model that runs end to end, then add complexity one step at a
 ## Naming conventions
 - **Subbasin IDs:** 1 = `Guichon_BelowSolar`, 2 = `Guichon_08LG041`, 3 = `Guichon_08LG056`
 - **HRU IDs:** sequential 1…N, taken from the `HRU_ID` field of `data/delineation_copy/hrus_final.shp`. Solar HRUs are 1 (SB1) and 6 (SB2). Attributes come from `data/scripts/hru_attributes_arcpy.py` → `data/processed/hru_attributes.csv`.
-- **Land use / vegetation classes (pairs, by forest cover):** `OPEN_LU`/`OPEN_VEG` (0%, SB1 and SB3 bands), `MIX20_LU`/`MIX20_VEG` (20%, SB2 bands), `SITE_PRE_LU`/`SITE_PRE_VEG` (50%, solar site pre-project, HRUs 1 and 6). Soil profile `DEFAULT_P` for all HRUs.
-- **Scenario classes:** `SOLAR` (land use) and `SOLAR_VEG` (vegetation)
+- **Land use / vegetation classes (pairs, by forest cover):** `MIX20_LU`/`MIX20_VEG` (20%: SB1 and SB3, including the solar site HRUs 1 and 6 pre-project), `MIX40_LU`/`MIX40_VEG` (40%: SB2 bands, HRUs 7-11). Soil profile `DEFAULT_P` for all HRUs. Forest cover acts only through `FOREST_COV` (interception, melt); `MAX_HT`/`MAX_LAI` have no effect in this setup. `RAIN_ICEPT_PCT`/`SNOW_ICEPT_PCT` are Raven defaults (0.12/0.10), not set explicitly.
+- **Scenario classes:** `SOLAR` (land use: `IMPERM` 1.0, `FOREST_COV` 0, a worst-case screening assumption) and `SOLAR_VEG` (vegetation)
 - **HRU groups:** `SB1_HRUs`, `SB2_HRUs`, `SB3_HRUs`, `SOLAR_SITE`. Declare them in the .rvi with `:DefineHRUGroups` and populate them in the .rvh.
 - **Channel profile:** none while `:Routing ROUTE_NONE` (`PROFILE = NONE` in `:SubBasins`). Use `CHAN_GUICHON` if channel routing is switched on.
 - **Met gauges:** `Daymet_HRUnn`, one per HRU (see Forcing below)
@@ -40,7 +40,8 @@ Build the simplest model that runs end to end, then add complexity one step at a
   - Keep `:LakeStorage SLOW_RESERVOIR` (an HBV-EC quirk).
 - **Time step and periods:** daily. Include one spin-up year before the calibration period, and set it with `:EvaluationPeriod`.
 - **Metrics:** `:EvaluationMetrics NASH_SUTCLIFFE KLING_GUPTA PCT_BIAS RMSE R2`. Evaluation periods: CALIBRATION 1983-10-01 to 1999-09-30, VALIDATION 1999-10-01 to 2011-09-30.
-- **Scenario method:** `:LandUseChange` and `:VegetationChange` for `SOLAR_SITE` sit at the bottom of the .rvp, dated `1900-01-01`, commented out for the baseline run and uncommented for the solar run. Because the date is before `:StartDate`, Raven applies the change at t = 0, so both runs use identical forcings over the full record.
+- **Scenario method:** `hbvec.rvp` is the baseline. `hbvec_solar.rvp` includes it with `:RedirectToFile hbvec.rvp` and adds `:LandUseChange` / `:VegetationChange` for `SOLAR_SITE`, dated `1900-01-01`. Because the date is before `:StartDate`, Raven applies the change at t = 0, so both runs use identical forcings and parameters over the full record. Never copy parameters into `hbvec_solar.rvp`; edit `hbvec.rvp` only.
+- **Solar scenario = fully impervious site** (`IMPERM` 1.0): all rain and melt on HRUs 1 and 6 bypasses the soil and goes to the fast reservoir. Report it as a bounding case, not an estimate. Capillary rise (`CRISE_HBV`) still returns some fast-reservoir water to the soil, where it can evaporate, so it is not literally zero ET. Note the solar HRUs total 3.99 km², about twice the ~2.1 km² footprint figure above; confirm which is right before reporting.
 
 ## Forcing (Daymet, since 2026-11-12)
 - **Source:** Daymet V4 R1, 1 km daily grid (Tmax, Tmin, precip), 1982-01-01 to 2011-12-31. It replaced the ECCC Highland Valley Lornex station (1123469), which reads low after about 1999 relative to the regional estimate. With unchanged parameters, Daymet raised KGE at 08LG056 from 0.40 to 0.75 over the full record (validation 0.05 to 0.64). Evidence: `archive/lornex/compare_lornex_daymet.pdf` (local only; archive/ is not tracked).
@@ -68,7 +69,7 @@ Build the simplest model that runs end to end, then add complexity one step at a
 ## Run commands
 ```
 Raven.exe hbvec -o output\ -r baseline
-Raven.exe hbvec -o output\ -r solar
+Raven.exe hbvec -p hbvec_solar.rvp -o output\ -r solar
 ```
 Outputs to compare: `<run>_Hydrographs.csv` (subbasin 1 for the answer, subbasin 2 against observed) and `<run>_Diagnostics.csv`.
 
