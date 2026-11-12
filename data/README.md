@@ -37,7 +37,7 @@ The `.rvt` files stay under `data/` because `hbvec.rvt` points to them with
 
 Daymet V4 R1 (1 km daily grid; Thornton et al. 2022, https://doi.org/10.3334/ORNLDAAC/2129)
 replaced the ECCC Highland Valley Lornex station, which reads low after about 1999 relative to
-the regional estimate. See `analysis/compare_lornex_daymet.pdf`. The Lornex pipeline (station
+the regional estimate. See `archive/lornex/compare_lornex_daymet.pdf` (local only). The Lornex pipeline (station
 downloads, Kamloops A gap-fill, `met_daily.rvt`, its `hbvec.rvt`) is in `archive/lornex/`.
 
 - **Download:** Daymet's NetCDF server needs a NASA Earthdata login, so `get_daymet.R` uses the

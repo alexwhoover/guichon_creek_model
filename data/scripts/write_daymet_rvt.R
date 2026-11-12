@@ -1,6 +1,6 @@
 # Build the model's forcing file hbvec.rvt from Daymet: one virtual gauge per HRU.
 # Daymet replaced the ECCC Highland Valley Lornex station on 2026-11-12 (the Lornex pipeline
-# is in archive/lornex/; the comparison is analysis/compare_lornex_daymet.pdf).
+# is in archive/lornex/; the comparison is archive/lornex/compare_lornex_daymet.pdf).
 #
 # Each HRU's daily Tmax, Tmin and precipitation is the mean of the Daymet sample points
 # inside it (equal-area 2 km grid, see get_daymet.R), i.e. the HRU's area-weighted mean.

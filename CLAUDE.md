@@ -43,7 +43,7 @@ Build the simplest model that runs end to end, then add complexity one step at a
 - **Scenario method:** `:LandUseChange` and `:VegetationChange` for `SOLAR_SITE` sit at the bottom of the .rvp, dated `1900-01-01`, commented out for the baseline run and uncommented for the solar run. Because the date is before `:StartDate`, Raven applies the change at t = 0, so both runs use identical forcings over the full record.
 
 ## Forcing (Daymet, since 2026-11-12)
-- **Source:** Daymet V4 R1, 1 km daily grid (Tmax, Tmin, precip), 1982-01-01 to 2011-12-31. It replaced the ECCC Highland Valley Lornex station (1123469), which reads low after about 1999 relative to the regional estimate. With unchanged parameters, Daymet raised KGE at 08LG056 from 0.40 to 0.75 over the full record (validation 0.05 to 0.64). Evidence: `analysis/compare_lornex_daymet.pdf`.
+- **Source:** Daymet V4 R1, 1 km daily grid (Tmax, Tmin, precip), 1982-01-01 to 2011-12-31. It replaced the ECCC Highland Valley Lornex station (1123469), which reads low after about 1999 relative to the regional estimate. With unchanged parameters, Daymet raised KGE at 08LG056 from 0.40 to 0.75 over the full record (validation 0.05 to 0.64). Evidence: `archive/lornex/compare_lornex_daymet.pdf` (local only; archive/ is not tracked).
 - **Lornex is archived** in `archive/lornex/` (not tracked). It can still be run for comparison with `Raven.exe hbvec -t archive/lornex/hbvec_lornex.rvt -o output\ -r lornex`.
 - **Method:** `data/scripts/get_daymet.R` samples Daymet on a 2 km grid in each HRU (250 m for small HRUs) through the single-pixel API, because the NetCDF/THREDDS server needs a NASA Earthdata login. `data/scripts/write_daymet_rvt.R` averages the points per HRU and writes `hbvec.rvt` with one virtual gauge per HRU. Details: `data/README.md`.
 - **Virtual gauges sit at their HRU's exact lat/lon/elevation from the .rvh.** `INTERP_NEAREST_NEIGHBOR` then gives each HRU its own gauge, and `OROCORR_HBV` applies no lapse, which is right because Daymet already includes elevation effects. No NetCDF build of Raven is needed.
@@ -82,7 +82,8 @@ Outputs to compare: `<run>_Hydrographs.csv` (subbasin 1 for the answer, subbasin
 
 ## Reference documents
 - **`data/README.md`:** data folder layout, Daymet method, rebuild steps
-- **`analysis/compare_lornex_daymet.pdf`:** Lornex vs Daymet forcing comparison (why Daymet is used)
+- **`analysis/daymet_virtual_gauges.pdf`:** how the Daymet virtual gauges are built, with figures (rebuild: `Rscript analysis/daymet_virtual_gauges.R`)
+- **`archive/lornex/compare_lornex_daymet.pdf`:** Lornex vs Daymet forcing comparison, why Daymet is used (local only)
 - **`RavenUsersManual_v4.1.pdf`:**
   - App. F.2: HBV-EC template
   - App. A.3: .rvh format
