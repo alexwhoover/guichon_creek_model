@@ -78,8 +78,11 @@ Outputs to compare: `<run>_Hydrographs.csv` (subbasin 1 for the answer, subbasin
 ## Calibration
 - **Parameters, roughly in order:** `RAINSNOW_TEMP`, `MELT_FACTOR` / `MIN_MELT_FACTOR`, `:RainCorrection` / `:SnowCorrection`, `HBV_BETA`, `FIELD_CAPACITY`, `BASEFLOW_COEFF` (fast and slow), `MAX_PERC_RATE`, `TIME_CONC`
 - **Method:** manual first, then OSTRICH. Objective: KGE at 08LG056, CALIBRATION period.
-- **Current parameters were calibrated with Lornex forcing** (OSTRICH, 2026-11-12) and have not been recalibrated for Daymet. Recalibrating with Daymet is the next calibration step.
-- **The OSTRICH setup is archived** in `archive/calib/` (not tracked; see its `README.md`). To reuse it, move it back to `calib/` or change `ROOT` in `prepare.py` to two folders up. Then re-run `python prepare.py` after any model edit so the templates match. The `.rvt` template must now cover the corrections in all 15 Daymet gauges.
+- **Current parameters:** OSTRICH DDS, 1000 trials, Daymet forcing, 2026-11-12; rounded into `hbvec.rvp`/`hbvec.rvt` (results in `calib/results_2026-11-12_daymet/`). KGE at 08LG056: 0.86 calibration (WY2005-2024, bias −0.4%), 0.08 validation (WY1982-2004, bias +82%). Accepted as good enough by the user, with known weaknesses:
+  - 08LG041 volume is about double the observed (bias +99% calibration, +174% validation). The parameters fit the high post-2004 flows at 08LG056 by shedding more water from the soil (`HBV_BETA` 1.0, `FIELD_CAPACITY` 0.80), which makes the lower watershed too wet.
+  - Two parameters finished at their bounds: `:RainCorrection` 0.805 (lower bound 0.80), slow-reservoir `BASEFLOW_COEFF` 0.0498 (upper bound 0.05).
+  - Possible next step: add a volume-bias penalty at 08LG041 to the objective and widen those two bounds.
+- **The OSTRICH setup is in `calib/`** (see `calib/README.md`). Re-run `python prepare.py` there after any model edit so the templates match. `prepare.py` handles the 15 Daymet gauges' `:RainCorrection`/`:SnowCorrection` lines (one shared value).
 - **08LG041 is regulated.** Do not calibrate against it; report its fit as an independent check. 08LG056 is the natural-flow target. Mamit Lake's outlet settings stay as uncalibrated guesses.
 - **Solar-site parameters are not calibrated.** The flow record cannot constrain `FOREST_COV`, `IMPERM` or interception for the site, so set them from literature or judgment and bracket them with low, central and high scenarios.
 

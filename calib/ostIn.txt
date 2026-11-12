@@ -26,22 +26,22 @@ BeginFilePairs
   hbvec.rvt.tpl ; hbvec.rvt
 EndFilePairs
 
-# init = value in the model files (the 2026-11-12 Lornex-forced calibration, rounded);
+# init = value in the model files (the 2026-11-12 Daymet calibration, WY2005-2024, rounded);
 # prepare.py checks they still match. par_RFCF/par_SFCF are applied to all 15 Daymet gauges.
 BeginParams
   #parameter     init    low     high    tx_in  tx_ost  tx_out
-  par_TT         0.727     -1.0    2.5     none   none    none   # RAINSNOW_TEMP [C]
-  par_CFMAX      4.384     2.5     7.0     none   none    none   # MELT_FACTOR [mm/d/K]
-  par_MINFRAC    0.20916970802919707     0.2     1.0     none   none    none   # MIN_MELT_FACTOR as a fraction of MELT_FACTOR
-  par_SFCF       0.896     0.8     1.5     none   none    none   # :SnowCorrection [-]
-  par_RFCF       1.016     0.8     1.3     none   none    none   # :RainCorrection [-]
-  par_THICK      1.456     0.3     2.0     none   none    none   # TOPSOIL thickness [m]; soil store = 360 mm per m
-  par_BETA       2.2     0.5     4.0     none   none    none   # HBV_BETA [-]
-  par_LP         0.642     0.5     0.9     none   none    none   # FIELD_CAPACITY (HBV LP) [-]
-  par_PERC       1.706     0.1     6.0     none   none    none   # MAX_PERC_RATE, fast -> slow reservoir [mm/d]
-  par_KF         0.0553    0.01    0.5     none   none    none   # BASEFLOW_COEFF, fast reservoir [1/d]
-  par_BFN        1.15     1.0     3.0     none   none    none   # BASEFLOW_N, fast reservoir (1 + HBV ALPHA) [-]
-  par_KS         0.0441    0.001   0.05    none   none    none   # BASEFLOW_COEFF, slow reservoir [1/d]
+  par_TT         0.715     -1.0    2.5     none   none    none   # RAINSNOW_TEMP [C]
+  par_CFMAX      4.001     2.5     7.0     none   none    none   # MELT_FACTOR [mm/d/K]
+  par_MINFRAC    0.23669082729317667     0.2     1.0     none   none    none   # MIN_MELT_FACTOR as a fraction of MELT_FACTOR
+  par_SFCF       0.902     0.8     1.5     none   none    none   # :SnowCorrection [-]
+  par_RFCF       0.805     0.8     1.3     none   none    none   # :RainCorrection [-]
+  par_THICK      1.662     0.3     2.0     none   none    none   # TOPSOIL thickness [m]; soil store = 360 mm per m
+  par_BETA       1.017     0.5     4.0     none   none    none   # HBV_BETA [-]
+  par_LP         0.798     0.5     0.9     none   none    none   # FIELD_CAPACITY (HBV LP) [-]
+  par_PERC       1.213     0.1     6.0     none   none    none   # MAX_PERC_RATE, fast -> slow reservoir [mm/d]
+  par_KF         0.0446    0.01    0.5     none   none    none   # BASEFLOW_COEFF, fast reservoir [1/d]
+  par_BFN        1.173     1.0     3.0     none   none    none   # BASEFLOW_N, fast reservoir (1 + HBV ALPHA) [-]
+  par_KS         0.0498    0.001   0.05    none   none    none   # BASEFLOW_COEFF, slow reservoir [1/d]
 EndParams
 
 # MIN_MELT_FACTOR = par_MINFRAC x par_CFMAX, so it can never exceed MELT_FACTOR.

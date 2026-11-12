@@ -9,7 +9,7 @@
 #========================================================================
 # GLOBAL PARAMETERS
 #========================================================================
-:GlobalParameter RAINSNOW_TEMP     0.727    # TT    [C]
+:GlobalParameter RAINSNOW_TEMP     0.715    # TT    [C]
 :GlobalParameter RAINSNOW_DELTA    2.0    # TTI   [C]
 :GlobalParameter SNOW_SWI          0.05   # CWH   [-]
 :GlobalParameter ADIABATIC_LAPSE   6.5    # TCALT [C/km]
@@ -32,7 +32,7 @@
 # POROSITY 0.36 = BC SIFT texture mix (Rawls et al. 1982 means) x (1 - 23% coarse fragments)
 :SoilProfiles
     LAKE,       0
-    DEFAULT_P,  3,  TOPSOIL, 1.456,  FAST_RES, 100.0,  SLOW_RES, 100.0
+    DEFAULT_P,  3,  TOPSOIL, 1.662,  FAST_RES, 100.0,  SLOW_RES, 100.0
 :EndSoilProfiles
 
 # Soil / runoff generation (HBV names):
@@ -42,9 +42,9 @@
 :SoilParameterList
   :Parameters,  POROSITY,  FIELD_CAPACITY,  SAT_WILT,  HBV_BETA,  MAX_CAP_RISE_RATE,  MAX_PERC_RATE,  BASEFLOW_COEFF,  BASEFLOW_N
   :Units,           none,            none,      none,      none,               mm/d,           mm/d,             1/d,        none
-    [DEFAULT],      0.36,           0.642,       0.0,     2.200,                1.0,            0.0,             0.0,         0.0
-    FAST_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,          1.706,          0.0553,       1.150
-    SLOW_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,       _DEFAULT,          0.0441,         1.0
+    [DEFAULT],      0.36,           0.798,       0.0,     1.017,                1.0,            0.0,             0.0,         0.0
+    FAST_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,          1.213,          0.0446,       1.173
+    SLOW_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,       _DEFAULT,          0.0498,         1.0
 :EndSoilParameterList
 
 #========================================================================
@@ -88,7 +88,7 @@
 :LandUseParameterList
   :Parameters,  MELT_FACTOR,  MIN_MELT_FACTOR,  HBV_MELT_FOR_CORR,  REFREEZE_FACTOR,  HBV_MELT_ASP_CORR
   :Units,            mm/d/K,           mm/d/K,               none,           mm/d/K,               none
-    [DEFAULT],        4.384,            0.917,                0.5,              2.0,               0.48
+    [DEFAULT],        4.001,            0.947,                0.5,              2.0,               0.48
 :EndLandUseParameterList
 
 :LandUseParameterList
