@@ -28,7 +28,8 @@
     SLOW_RES
 :EndSoilClasses
 
-# FC [mm] = TOPSOIL thickness [m] x 1000 x POROSITY  (2.0 x 1000 x 0.2 = 400 mm)
+# FC [mm] = TOPSOIL thickness [m] x 1000 x POROSITY  (2.0 x 1000 x 0.36 = 720 mm)
+# POROSITY 0.36 = BC SIFT texture mix (Rawls et al. 1982 means) x (1 - 23% coarse fragments)
 :SoilProfiles
     LAKE,       0
     DEFAULT_P,  3,  TOPSOIL, 2.0,  FAST_RES, 100.0,  SLOW_RES, 100.0
@@ -41,7 +42,7 @@
 :SoilParameterList
   :Parameters,  POROSITY,  FIELD_CAPACITY,  SAT_WILT,  HBV_BETA,  MAX_CAP_RISE_RATE,  MAX_PERC_RATE,  BASEFLOW_COEFF,  BASEFLOW_N
   :Units,           none,            none,      none,      none,               mm/d,           mm/d,             1/d,        none
-    [DEFAULT],       0.2,             0.5,       0.0,       2.0,                1.0,            0.0,             0.0,         0.0
+    [DEFAULT],      0.36,             0.5,       0.0,       2.0,                1.0,            0.0,             0.0,         0.0
     FAST_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,            5.0,            0.05,         1.5
     SLOW_RES,   _DEFAULT,        _DEFAULT,       0.0,  _DEFAULT,           _DEFAULT,       _DEFAULT,            0.02,         1.0
 :EndSoilParameterList
