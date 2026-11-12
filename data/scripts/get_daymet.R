@@ -21,8 +21,8 @@ Sys.setenv(TZ = "America/Vancouver")
 suppressMessages(library(sf))
 sf_use_s2(FALSE)
 
-START   <- "1982-01-01"
-END     <- "2011-12-31"
+START   <- "1980-01-01"   # Daymet starts 1980; model starts 1980-10-01 (WY1981 spin-up)
+END     <- "2024-12-31"   # flow records (08LG041, 08LG056) end 2024-12-31
 SPACING <- 2000      # m, main sampling grid
 FINE    <- 250       # m, grid for small HRUs
 MIN_PTS <- 5
@@ -64,13 +64,22 @@ cat("Sample points per HRU:\n"); print(table(pts$HRU_ID))
 
 # ---- download ----------------------------------------------------------------
 url <- "https://daymet.ornl.gov/single-pixel/api/data?lat=%.5f&lon=%.5f&vars=tmax,tmin,prcp&start=%s&end=%s"
+# A file is complete if it starts in START's year and ends in END's year; anything else
+# (missing, partial, or from an earlier period) is downloaded again.
+complete <- function(f) {
+  if (!file.exists(f) || file.size(f) < 100000) return(FALSE)
+  ln <- readLines(f)
+  first <- ln[grep("^year,", ln) + 1]
+  startsWith(first, paste0(substr(START, 1, 4), ",")) &&
+    startsWith(ln[length(ln)], paste0(substr(END, 1, 4), ","))
+}
 for (i in seq_len(nrow(pts))) {
   f <- file.path(RAW, sprintf("pt_%04d.csv", pts$point_id[i]))
-  if (file.exists(f) && file.size(f) > 100000) next
+  if (complete(f)) next
   for (try in 1:3) {
     ok <- tryCatch({
       download.file(sprintf(url, pts$lat[i], pts$lon[i], START, END), f, quiet = TRUE, mode = "wb")
-      file.size(f) > 100000
+      complete(f)
     }, error = function(e) FALSE)
     if (ok) break
     Sys.sleep(5 * try)

@@ -46,7 +46,7 @@ loc  <- data.frame(HRU_ID = as.integer(sapply(f, `[`, 1)), area = as.numeric(sap
                    note = trimws(sub(".*#", "", rows)))
 gpts <- st_transform(st_as_sf(loc, coords = c("lon", "lat"), crs = 4326), crs)
 
-# ---- Daymet points: mean annual precipitation and temperature, 1982-2011 -----
+# ---- Daymet points: mean annual precipitation and temperature, 1980-2024 -----
 pts <- read.csv("data/processed/daymet_points.csv")
 stat <- t(sapply(pts$point_id, function(id) {
   ln <- readLines(sprintf("data/raw/daymet/pt_%04d.csv", id))
@@ -88,7 +88,7 @@ footer <- function(n) grid.text(sprintf("Guichon Creek Raven HBV-EC model  ·  D
 steps <- data.frame(
   y = 5:1,
   head = c("1  Daymet V4 R1", "2  Sample points", "3  HRU mean", "4  Virtual gauge", "5  Raven"),
-  body = c("1 km daily grid of Tmax, Tmin and precipitation, 1982-2011",
+  body = c("1 km daily grid of Tmax, Tmin and precipitation, 1980-2024",
            "Regular 2 km grid clipped to each HRU (250 m where an HRU would get < 5 points);\none single-pixel API request per point (845 points)",
            "Mean of every point inside the HRU, across all of its pieces.\nEqual-area grid, so the mean is the HRU's area-weighted mean",
            "Daymet_HRUnn at the HRU's own LATITUDE, LONGITUDE, ELEVATION from hbvec.rvh,\nwith monthly temperature + Hargreaves PET normals and the shared Rain/SnowCorrection",
@@ -193,7 +193,7 @@ pages <- list(
   function() {
     grid.newpage()
     heading("Per-HRU summary", unit(0.95, "npc"), 13)
-    grid.text("Points = sample points.  Missed % = share of HRU area in pieces too small to contain a point.  P and T are 1982-2011 means over the points.",
+    grid.text("Points = sample points.  Missed % = share of HRU area in pieces too small to contain a point.  P and T are 1980-2024 means over the points.",
               x = 0.07, y = 0.925, just = c("left", "top"), gp = gpar(fontsize = 8, col = ink2))
     y <- draw_table(tt, 0.895)
     heading("What this means", unit(y, "npc"))

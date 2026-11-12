@@ -7,11 +7,11 @@
 #------------------------------------------------------------------------
 # Simulation period
 #------------------------------------------------------------------------
-# Forcing: Daymet V4 R1, one virtual gauge per HRU (hbvec.rvt), downloaded for 1982-2011
-# (available 1980 on). Flow (08LG041, 08LG056): 1982-01 to 2024-12.
-# Water years Oct-Sep. First water year (1982-83) is spin-up only.
-:StartDate             1982-10-01 00:00:00
-:EndDate               2011-09-30 00:00:00
+# Forcing: Daymet V4 R1, one virtual gauge per HRU (hbvec.rvt), 1980-01 to 2024-12.
+# Flow (08LG041, 08LG056): 1982-01 to 2024-12 (08LG056 has no data Oct 2011 - Jan 2013).
+# Water years Oct-Sep. First water year (WY1981, 1980-10 to 1981-09) is spin-up only.
+:StartDate             1980-10-01 00:00:00
+:EndDate               2024-09-30 00:00:00
 :TimeStep              1.0                    # daily (HBV-EC is a daily model)
 
 #------------------------------------------------------------------------
@@ -40,8 +40,11 @@
 
 :SoilModel                  SOIL_MULTILAYER 3
 
-:EvaluationPeriod  CALIBRATION  1983-10-01  1999-09-30
-:EvaluationPeriod  VALIDATION   1999-10-01  2011-09-30
+# Calibrate on present-day conditions (WY2005-2024: after the ~2004 shift in 08LG056 flows,
+# pine beetle, current mine operations), which the solar project will act on; validate on
+# the earlier regime (WY1982-2004; flow records start 1982-01-01).
+:EvaluationPeriod  CALIBRATION  2004-10-01  2024-09-30
+:EvaluationPeriod  VALIDATION   1981-10-01  2004-09-30
 
 #------------------------------------------------------------------------
 # Soil layer aliases (SOIL[0] = HBV soil moisture box)

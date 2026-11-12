@@ -46,6 +46,9 @@ downloads, Kamloops A gap-fill, `met_daily.rvt`, its `hbvec.rvt`) is in `archive
 - **Virtual gauges:** `hbvec.rvt` has one gauge per HRU at that HRU's lat/lon/elevation from
   `hbvec.rvh`. Nearest-neighbour interpolation then gives each HRU its own gauge, and
   `OROCORR_HBV` applies no lapse because Daymet already includes elevation effects.
+- **Period:** 1980-01-01 to 2024-12-31 (`START`/`END` in `get_daymet.R`), covering the model
+  period WY1981-2024. Monthly PET normals use the same water years (`NORM_START`/`NORM_END` in
+  `write_daymet_rvt.R`).
 - **Leap years:** Daymet omits Dec 31. It is filled with Dec 30's temperatures and zero precip.
 - **If the HRUs change** (new .rvh), re-run both scripts: the sample points and gauge locations
   come from the HRU polygons and the .rvh.
@@ -57,6 +60,6 @@ Run these from `HBVEC_Model/`:
 ```
 python data/scripts/get_obs_08LG041.py
 python data/scripts/get_obs_08LG056.py
-Rscript data/scripts/get_daymet.R        # ~850 requests; skips points already downloaded
+Rscript data/scripts/get_daymet.R        # ~850 requests; skips points already covering START-END
 Rscript data/scripts/write_daymet_rvt.R  # rewrites hbvec.rvt, keeping its :RainCorrection/:SnowCorrection
 ```

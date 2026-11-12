@@ -14,7 +14,7 @@
 :GlobalParameter SNOW_SWI          0.05   # CWH   [-]
 :GlobalParameter ADIABATIC_LAPSE   6.5    # TCALT [C/km]
 :GlobalParameter PRECIP_LAPSE      0.0    # PCALT [mm/d/km]
-:AvgAnnualRunoff   28                     # mm/yr, 08LG041 1982-2011 mean
+:AvgAnnualRunoff   34                     # mm/yr, 08LG041 WY1982-2024 mean (870.1 km2)
 
 #========================================================================
 # SOIL

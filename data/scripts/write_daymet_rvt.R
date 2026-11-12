@@ -13,7 +13,7 @@
 # must share one value), so calibrated values survive a rebuild. The current values were
 # calibrated with Lornex forcing and have not yet been recalibrated for Daymet.
 # PET_FROMMONTHLY normals are computed per HRU with Hargreaves (1985), from the HRU's
-# Daymet temperatures, over the model period 1982-10..2011-09.
+# Daymet temperatures, over the model period NORM_START..NORM_END (WY1981-2024).
 #
 # Daymet uses a 365-day calendar: in leap years Dec 31 is omitted. It is filled here with
 # Dec 30's temperatures and zero precipitation.
@@ -30,21 +30,30 @@
 
 Sys.setenv(TZ = "America/Vancouver")
 
-NORM_START <- as.Date("1982-10-01")
-NORM_END   <- as.Date("2011-09-30")
+NORM_START <- as.Date("1980-10-01")   # = :StartDate in hbvec.rvi
+NORM_END   <- as.Date("2024-09-30")   # = :EndDate
 dir.create("data/daymet", showWarnings = FALSE)
 
 # ---- read and average the point series ---------------------------------------
+# Running sum per HRU (all points share Daymet's dates), which keeps memory small.
 pts <- read.csv("data/processed/daymet_points.csv")
 read_pt <- function(id) {
   f  <- sprintf("data/raw/daymet/pt_%04d.csv", id)
   ln <- readLines(f)
   x  <- read.csv(text = ln[grep("^year,", ln):length(ln)], check.names = FALSE)
-  data.frame(date = as.Date(sprintf("%d-01-01", x$year)) + x$yday - 1,
-             tmax = x[["tmax (deg c)"]], tmin = x[["tmin (deg c)"]], prcp = x[["prcp (mm/day)"]])
+  list(date = as.Date(sprintf("%d-01-01", x$year)) + x$yday - 1,
+       v = cbind(tmax = x[["tmax (deg c)"]], tmin = x[["tmin (deg c)"]], prcp = x[["prcp (mm/day)"]]))
 }
-all <- do.call(rbind, lapply(seq_len(nrow(pts)), function(i) cbind(HRU_ID = pts$HRU_ID[i], read_pt(pts$point_id[i]))))
-d   <- aggregate(cbind(tmax, tmin, prcp) ~ HRU_ID + date, all, mean)
+d <- do.call(rbind, lapply(sort(unique(pts$HRU_ID)), function(h) {
+  ids <- pts$point_id[pts$HRU_ID == h]
+  first <- read_pt(ids[1]); s <- first$v
+  for (id in ids[-1]) {
+    p <- read_pt(id)
+    stopifnot(identical(p$date, first$date))
+    s <- s + p$v
+  }
+  data.frame(HRU_ID = h, date = first$date, s / length(ids))
+}))
 
 # fill the Dec 31 that Daymet omits in leap years
 days <- seq(min(d$date), max(d$date), by = "day")
