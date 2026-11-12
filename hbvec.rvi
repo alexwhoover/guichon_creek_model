@@ -79,7 +79,7 @@
 #------------------------------------------------------------------------
 # Output options
 #------------------------------------------------------------------------
-# OSTRICH reads KLING_GUPTA (column 4) and R2 (column 7) from Diagnostics.csv by position:
+# OSTRICH reads KLING_GUPTA (column 4) from Diagnostics.csv by position:
 # if this list is reordered, update calib/ostIn.txt to match.
 :EvaluationMetrics   NASH_SUTCLIFFE  KLING_GUPTA  PCT_BIAS  RMSE  R2
 :WriteForcingFunctions

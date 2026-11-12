@@ -1,10 +1,9 @@
 @echo off
 REM Run by OSTRICH once per trial, from calib\processor_0\.
-REM OSTRICH has just written hbvec.rvp / .rvt / .rvh here from the templates.
+REM OSTRICH has just written hbvec.rvp and hbvec.rvt here from the templates.
 
 copy /y hbvec.rvp model\hbvec.rvp >nul
 copy /y hbvec.rvt model\hbvec.rvt >nul
-copy /y hbvec.rvh model\hbvec.rvh >nul
 
 cd model
 if not exist output mkdir output

@@ -15,7 +15,7 @@ Build the simplest model that runs end to end, then add complexity one step at a
 | Item | Value |
 |---|---|
 | Subbasin 1 | Outlet on Guichon Creek just below the solar site. `DOWNSTREAM_ID = 2`. `GAUGED = 1` (main output). |
-| Subbasin 2 | Remainder to 08LG041, contains Mamit Lake. `DOWNSTREAM_ID = -1`. `GAUGED = 1` (regulated gauge; timing check only). |
+| Subbasin 2 | Remainder to 08LG041, contains Mamit Lake. `DOWNSTREAM_ID = -1`. `GAUGED = 1` (regulated gauge; not calibrated, reported as a check only). |
 | Subbasin 3 | CALIBRATION branch only. Headwater above WSC 08LG056 (76 km², natural flow, RHBN), split out of subbasin 1. `DOWNSTREAM_ID = 1`. `GAUGED = 1` (main calibration target). HRUs 12–15. |
 | Elevation range | ~800–1900 m |
 | Elevation bands | 1: <1000, 2: 1000–1200, 3: 1200–1400, 4: 1400–1600, 5: 1600+ (top merged; 1800–1900 is a sliver) |
@@ -61,8 +61,8 @@ Outputs to compare: `<run>_Hydrographs.csv` (subbasin 1 for the answer, subbasin
 
 ## Calibration
 - **Parameters, roughly in order:** `RAINSNOW_TEMP`, `MELT_FACTOR` / `MIN_MELT_FACTOR`, `:RainCorrection` / `:SnowCorrection`, `HBV_BETA`, `FIELD_CAPACITY`, `BASEFLOW_COEFF` (fast and slow), `MAX_PERC_RATE`, `TIME_CONC`
-- **Method:** manual first, then OSTRICH (set up in `calib/`; see `calib/README.md`). Objective: 0.75 × KGE at 08LG056 + 0.25 × R² at 08LG041, CALIBRATION period.
-- **08LG041 is regulated.** Do not calibrate volume against it. 08LG056 is the natural-flow target.
+- **Method:** manual first, then OSTRICH (set up in `calib/`; see `calib/README.md`). Objective: KGE at 08LG056, CALIBRATION period.
+- **08LG041 is regulated.** Do not calibrate against it; report its fit as an independent check. 08LG056 is the natural-flow target. Mamit Lake's outlet settings stay as uncalibrated guesses.
 - **After editing any model file,** re-run `python prepare.py` in `calib/` so the OSTRICH templates match.
 - **Solar-site parameters are not calibrated.** The flow record cannot constrain `FOREST_COV`, `IMPERM` or interception for the site, so set them from literature or judgment and bracket them with low, central and high scenarios.
 

@@ -3,9 +3,11 @@
 # Run from calib\ :   python prepare.py     (builds templates + model\, checks this file)
 #                     Ostrich.exe
 #
-# Each trial, OSTRICH writes the three input files below from their templates into
-# processor_0\, runs Ost-RAVEN.bat there, and reads two scores from
-# processor_0\model\output\calib_Diagnostics.csv (CALIBRATION period, 1983-10-01 to 1999-09-30).
+# Each trial, OSTRICH writes the two input files below from their templates into
+# processor_0\, runs Ost-RAVEN.bat there, and reads one score from
+# processor_0\model\output\calib_Diagnostics.csv: KGE at WSC 08LG056 (subbasin 3, natural
+# flow) for the CALIBRATION period, 1983-10-01 to 1999-09-30.
+# WSC 08LG041 (subbasin 2, regulated) is not calibrated against; it is an independent check.
 
 ProgramType         DDS
 ObjectiveFunction   GCOP
@@ -21,7 +23,6 @@ EndExtraDirs
 BeginFilePairs
   hbvec.rvp.tpl ; hbvec.rvp
   hbvec.rvt.tpl ; hbvec.rvt
-  hbvec.rvh.tpl ; hbvec.rvh
 EndFilePairs
 
 # init = value in the model files when this was set up (prepare.py checks they still match).
@@ -39,7 +40,6 @@ BeginParams
   par_KF         0.05    0.01    0.5     none   none    none   # BASEFLOW_COEFF, fast reservoir [1/d]
   par_BFN        1.5     1.0     3.0     none   none    none   # BASEFLOW_N, fast reservoir (1 + HBV ALPHA) [-]
   par_KS         0.02    0.001   0.05    none   none    none   # BASEFLOW_COEFF, slow reservoir [1/d]
-  par_CRESTW     10.0    1.0     30.0    none   none    none   # Mamit Lake :CrestWidth [m] (affects 08LG041 only)
 EndParams
 
 # MIN_MELT_FACTOR = par_MINFRAC x par_CFMAX, so it can never exceed MELT_FACTOR.
@@ -53,14 +53,11 @@ EndTiedParams
 BeginResponseVars
   #name     filename                                 keyword                     line  col  token
   KGE_56    .\model\output\calib_Diagnostics.csv ;   HYDROGRAPH_CALIBRATION[3]   0     4    ','
-  R2_41     .\model\output\calib_Diagnostics.csv ;   HYDROGRAPH_CALIBRATION[2]   0     7    ','
 EndResponseVars
 
-# Objective (OSTRICH minimizes): -(0.75 x KGE at 08LG056 + 0.25 x R2 at 08LG041)
-#   08LG056 is natural flow, so its KGE scores volume, variability and timing.
-#   08LG041 is regulated, so only its R2 is used: timing and shape, not volume.
+# Objective (OSTRICH minimizes): -KGE at 08LG056
 BeginTiedRespVars
-  NegObj 2 KGE_56 R2_41 wsum -0.75 -0.25
+  NegObj 1 KGE_56 wsum -1.00
 EndTiedRespVars
 
 BeginGCOP

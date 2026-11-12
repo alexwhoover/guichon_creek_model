@@ -6,19 +6,21 @@ best parameters back yourself (step 5).
 
 ## What is calibrated against what
 
-| Gauge | Model outlet | Flow | Role | Score used |
-|---|---|---|---|---|
-| WSC 08LG056, Guichon Creek above Tunkwa Lake Diversion (76 km²) | subbasin 3 | natural (RHBN reference station) | main target | KGE, weight 0.75 |
-| WSC 08LG041, Guichon Creek at outlet of Mamit Lake (870 km²) | subbasin 2 | regulated | timing check only | R², weight 0.25 |
+| Gauge | Model outlet | Flow | Role |
+|---|---|---|---|
+| WSC 08LG056, Guichon Creek above Tunkwa Lake Diversion (76 km²) | subbasin 3 | natural (RHBN reference station) | calibration target: KGE |
+| WSC 08LG041, Guichon Creek at outlet of Mamit Lake (870 km²) | subbasin 2 | regulated | not calibrated; reported as an independent check |
 
-Both scores are for the CALIBRATION period (1983-10-01 to 1999-09-30). 08LG056 has no
-missing days in that period.
+The objective is KGE at 08LG056 for the CALIBRATION period (1983-10-01 to 1999-09-30).
+08LG056 has no missing days in that period. KGE scores volume, variability and timing, and
+the gauge sits inside subbasin 1, upstream of the solar site.
 
-08LG041 is regulated, so its volume is not used: R² scores only the timing and shape of the
-hydrograph. KGE at 08LG056 scores volume, variability and timing, and that gauge sits inside
-subbasin 1, upstream of the solar site.
+08LG041 is regulated and sits below Mamit Lake, whose outlet settings are guesses, so it is
+left out of the objective. Subbasin 2 stays in the model: part of the solar site (HRU 6)
+drains to it, and its fit shows whether the parameters carry over to the lower, drier part
+of the watershed.
 
-## Parameters (13)
+## Parameters (12)
 
 | OSTRICH name | Raven parameter | File | Start | Range |
 |---|---|---|---|---|
@@ -34,17 +36,15 @@ subbasin 1, upstream of the solar site.
 | `par_KF` | `BASEFLOW_COEFF`, fast reservoir (1/d) | .rvp | 0.05 | 0.01 to 0.5 |
 | `par_BFN` | `BASEFLOW_N`, fast reservoir | .rvp | 1.5 | 1 to 3 |
 | `par_KS` | `BASEFLOW_COEFF`, slow reservoir (1/d) | .rvp | 0.02 | 0.001 to 0.05 |
-| `par_CRESTW` | Mamit Lake `:CrestWidth` (m) | .rvh | 10 | 1 to 30 |
 
 - `MIN_MELT_FACTOR` is written as `par_MINFRAC × par_CFMAX`, so it can never exceed `MELT_FACTOR`.
 - The TOPSOIL upper bound is 2.0 m (not the 1.5 m suggested for BC) so that the current value
   is inside the range. A result above 1.5 m is a warning sign, not a finding.
-- `par_CRESTW` only affects 08LG041. It is there so that a wrong lake response is not
-  absorbed by the snow and soil parameters.
 
 Left fixed on purpose: `POROSITY` (0.36, from the soil survey), `HBV_MELT_FOR_CORR` (drives the
 solar result and no forested HRU drains to 08LG056), `HBV_MELT_ASP_CORR` (no effect while HRU
-slopes are 0), lapse rates, `TIME_CONC`, and everything about the solar site.
+slopes are 0), lapse rates, `TIME_CONC`, the Mamit Lake outlet settings (they only affect
+08LG041), and everything about the solar site.
 
 ## Files
 
@@ -52,7 +52,7 @@ slopes are 0), lapse rates, `TIME_CONC`, and everything about the solar site.
 |---|---|
 | `ostIn.txt` | OSTRICH control file: parameters, ranges, objective, algorithm |
 | `prepare.py` | Builds the templates and `model\` from the model files, and checks `ostIn.txt` |
-| `hbvec.rvp.tpl`, `.rvt.tpl`, `.rvh.tpl` | Templates written by `prepare.py` (do not edit by hand) |
+| `hbvec.rvp.tpl`, `hbvec.rvt.tpl` | Templates written by `prepare.py` (do not edit by hand) |
 | `Ost-RAVEN.bat` | Runs Raven for one trial |
 | `save_best.bat` | Keeps the best trial's files |
 | `Ostrich.exe` | OSTRICH v17.12.19, from `RavenOstrichTutorialFiles.zip` on the Raven downloads page (not in git) |
@@ -71,22 +71,22 @@ Run everything from `HBVEC_Model\calib\`.
    cd ..
    ```
    Check that `model\output\Raven_errors.txt` has no errors, and that
-   `model\output\calib_Diagnostics.csv` has rows `HYDROGRAPH_CALIBRATION[2]` and
-   `HYDROGRAPH_CALIBRATION[3]` with KGE in column 4 and R2 in column 7.
+   `model\output\calib_Diagnostics.csv` has a row `HYDROGRAPH_CALIBRATION[3]` with KGE in
+   column 4.
 
 3. **Test OSTRICH** (optional but quick): set `MaxIterations` to 3 in `ostIn.txt`, run
    `Ostrich.exe`, and check `OstErrors0.txt` is empty and `OstModel0.txt` has 3 or 4 rows with
-   sensible objective values (between −1 and about 0). Then set it back to 1000 and delete
-   `processor_0\` and the `Ost*.txt` output files.
+   sensible objective values (minus the KGE, so about −1 to 0.5). Then set it back to 1000
+   and delete `processor_0\` and the `Ost*.txt` output files.
 
 4. **Calibrate.** `Ostrich.exe`. 1000 Raven runs. Progress is in `OstModel0.txt`; the result is
    in `OstOutput0.txt`; the best trial's input files are in `processor_0\best\`.
 
-5. **Use the result.** Look at `processor_0\best\calib_Diagnostics.csv` first (including the
-   VALIDATION rows, which were not used). If you accept it, copy `hbvec.rvp`, `hbvec.rvt` and
-   `hbvec.rvh` from `processor_0\best\` over the ones in `HBVEC_Model\`, then run the baseline
-   and solar runs as usual. The copies have the same text as the originals with only the 14
-   numbers changed.
+5. **Use the result.** Look at `processor_0\best\calib_Diagnostics.csv` first: the VALIDATION
+   rows and all the 08LG041 rows (`[2]`) were not used in the calibration. If you accept it,
+   copy `hbvec.rvp` and `hbvec.rvt` from `processor_0\best\` over the ones in `HBVEC_Model\`,
+   then run the baseline and solar runs as usual. The copies have the same text as the
+   originals with only the 13 numbers changed.
 
 Before starting a new calibration, delete `processor_0\` and the `Ost*.txt` output files, and
 re-run `prepare.py` if any model file changed.
@@ -103,7 +103,10 @@ re-run `prepare.py` if any model file changed.
 - **Tunkwa Lake diversion.** 08LG056 is just upstream of a historic diversion out of Guichon
   Creek (WSC 08LG014, gauged 1919–1930). The model does not take any water out there. If the
   diversion still operates, flows at the subbasin 1 outlet are overstated in both runs.
-- **08LG041 volume is not constrained.** Expect the model to overpredict volume there, because
+- **08LG041 is not constrained at all.** Expect the model to overpredict volume there, because
   withdrawals and storage upstream of that gauge are not modelled.
+- **One gauge, higher ground.** The catchment above 08LG056 is mostly 1200–1750 m. The solar
+  site (about 1215 m) and the rest of subbasin 1 are lower and drier, and the calibration
+  assumes the same parameters hold there.
 - **A snow course exists** if the snow parameters need an independent check: BC Snow Survey
   1C09A Highland Valley (1510 m, active), inside the watershed. It is not used here.

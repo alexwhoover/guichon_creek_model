@@ -4,5 +4,4 @@ IF NOT EXIST best mkdir best
 
 copy /y model\hbvec.rvp best\hbvec.rvp >nul
 copy /y model\hbvec.rvt best\hbvec.rvt >nul
-copy /y model\hbvec.rvh best\hbvec.rvh >nul
 copy /y model\output\calib_Diagnostics.csv best\calib_Diagnostics.csv >nul

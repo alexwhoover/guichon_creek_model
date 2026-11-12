@@ -1,13 +1,13 @@
 """Get the calib\\ folder ready for OSTRICH. Run from calib\\ :  python prepare.py
 
 Does three things, all from the model files in the folder above (never edits them):
-  1. Writes the OSTRICH templates (hbvec.rvp.tpl / .rvt.tpl / .rvh.tpl): copies of the
+  1. Writes the OSTRICH templates (hbvec.rvp.tpl / .rvt.tpl): copies of the
      model files with each calibrated number replaced by its par_ name.
   2. Builds model\\ : the copy of the model that OSTRICH runs (calibration .rvi with
      output switched off, .rvc, data\\*.rvt, and the current .rvp/.rvt/.rvh for a test run).
   3. Checks ostIn.txt against the templates and prints the parameter table.
 
-Re-run it whenever hbvec.rvp / .rvt / .rvh / .rvi or ostIn.txt change.
+Re-run it whenever any model file (hbvec.rv*) or ostIn.txt changes.
 It does not run Raven or OSTRICH.
 """
 import os, re, shutil, sys
@@ -35,9 +35,6 @@ SPEC = {
     "hbvec.rvt": [
         (rf"^\s*:RainCorrection\s+({NUM})", ["par_RFCF"]),
         (rf"^\s*:SnowCorrection\s+({NUM})", ["par_SFCF"]),
-    ],
-    "hbvec.rvh": [
-        (rf"^\s*:CrestWidth\s+({NUM})", ["par_CRESTW"]),
     ],
 }
 
