@@ -5,7 +5,7 @@
 # Reads (does not change) the model files, calib/results_2026-11-12_daymet/, data/, and the
 # baseline/solar run outputs in output/. Map geometry comes from the project geodatabase
 # (cleaned hrus_v3_08LG056 / subbasins_v3_08LG056) if it is reachable, otherwise it is rebuilt
-# from data/delineation_copy/.
+# from data/gis/.
 
 Sys.setenv(TZ = "America/Vancouver")
 suppressMessages({ library(sf); library(ggplot2); library(grid); library(ggrepel) })
@@ -159,9 +159,9 @@ gdb <- "../../ArcGIS/mahatemEEwuh/mahatemEEwuh.gdb"
 geo_src <- "project geodatabase (hrus_v3_08LG056, cleaned 2026-11-12)"
 hp <- tryCatch(st_transform(st_read(gdb, "hrus_v3_08LG056", quiet = TRUE), crs), error = function(e) NULL)
 if (is.null(hp)) {
-  geo_src <- "rebuilt from data/delineation_copy/"
-  h0 <- st_transform(st_make_valid(st_read("data/delineation_copy/hrus_final.shp", quiet = TRUE)), crs)
-  c56 <- st_geometry(st_transform(st_read("data/delineation_copy/catchment_08LG056.shp", quiet = TRUE), crs))
+  geo_src <- "rebuilt from data/gis/"
+  h0 <- st_transform(st_make_valid(st_read("data/gis/hrus_final.shp", quiet = TRUE)), crs)
+  c56 <- st_geometry(st_transform(st_read("data/gis/catchment_08LG056.shp", quiet = TRUE), crs))
   cut <- h0$subbasin == 1 & h0$BAND > 0
   suppressWarnings({ ab <- st_intersection(h0[cut, ], c56); be <- st_difference(h0[cut, ], c56) })
   ab <- ab[order(ab$HRU_ID), ]; ab$HRU_ID <- 11 + seq_len(nrow(ab))
@@ -264,7 +264,7 @@ sb_tab <- data.frame(ID = sbt$id, Name = sbt$name, `Downstream` = ifelse(sbt$dow
 src_tab <- data.frame(
   Dataset = c("Elevation", "Subbasins and HRUs", "08LG056 catchment", "Streamflow", "Meteorology",
               "Soil porosity", "Forest cover, land use", "Solar footprint"),
-  Source = c("NRCan MRDEM 30 m DTM (data/delineation_copy/MRDEM30_dtm.tif)",
+  Source = c("NRCan MRDEM 30 m DTM (data/gis/MRDEM30_dtm.tif)",
              "GIS delineation from the DEM in ArcGIS Pro (hrus_final.shp, subbasins_final.shp); attributes by hru_attributes_arcpy.py",
              "Canadian Lake-River Hydrofabric (CLRH) finalcat_info v1-1, catchments draining to Obs_NM = 08LG056 (split_08LG056_subbasin.R)",
              "WSC HYDAT 08LG056 daily mean discharge via ECCC GeoMet API, retrieved 2026-11-12; 1982-01-01 to 2024-12-31 (get_obs_08LG056.py)",
@@ -444,7 +444,7 @@ y <- txt(y, c("Raven.exe hbvec -o output\\ -r baseline", "Raven.exe hbvec -p hbv
 y <- head2(y - 0.01, "Files")
 files <- data.frame(File = c("hbvec.rvi", "hbvec.rvh", "hbvec.rvp", "hbvec_solar.rvp", "hbvec.rvt", "hbvec.rvc", "data/", "calib/", "analysis/", "CLAUDE.md"),
   Contents = c("Options, periods, processes, outputs", "Subbasins, HRUs, HRU groups", "Parameters (baseline)",
-               "Solar run: includes hbvec.rvp + land-cover change", "Daymet gauges and 08LG056 observations (data/daymet/*.rvt)",
+               "Solar run: includes hbvec.rvp + land-cover change", "Daymet gauges and 08LG056 observations (data/model_input/forcing/*.rvt)",
                "Initial conditions (defaults)", "Raw data, processed data and build scripts (data/README.md)",
                "OSTRICH setup and saved results (calib/README.md)", "Plot scripts", "Project conventions, decisions and Raven gotchas"), check.names = FALSE)
 y <- tbl(y, files, c(1.3, 4.2), size = 8.3)

@@ -14,11 +14,11 @@
 #
 # Inputs:
 #   ../../ArcGIS/mahatemEEwuh/Inputs/CLRH_08LG041/finalcat_info_v1-1.shp
-#   data/delineation_copy/hrus_final.shp, MRDEM30_dtm.tif
+#   data/gis/hrus_final.shp, MRDEM30_dtm.tif
 #   data/processed/hru_attributes.csv   (areas used in hbvec.rvh)
 # Outputs:
 #   data/processed/hru_split_08LG056.csv        HRU rows to paste into hbvec.rvh
-#   data/delineation_copy/catchment_08LG056.shp  catchment polygon (for checking in GIS)
+#   data/gis/catchment_08LG056.shp  catchment polygon (for checking in GIS)
 #
 # Usage (from Raven/HBVEC_Model):  Rscript data/scripts/split_08LG056_subbasin.R
 
@@ -37,7 +37,7 @@ upstream <- function(id) {
 gauge_sub <- d$SubId[which(d$Obs_NM == "08LG056")]
 ids <- unique(upstream(gauge_sub))
 
-hru <- st_make_valid(st_read("data/delineation_copy/hrus_final.shp", quiet = TRUE))
+hru <- st_make_valid(st_read("data/gis/hrus_final.shp", quiet = TRUE))
 cat56 <- st_union(st_make_valid(fc[fc$SubId %in% ids, ])) |> st_transform(st_crs(hru))
 # hrus_final is in a conformal projection (areas ~1% small), so measure area in BC Albers
 km2_56 <- as.numeric(st_area(st_transform(cat56, 3005))) / 1e6
@@ -62,7 +62,7 @@ suppressWarnings({
 if (any(above$HRU_ID %in% c(1, 6))) stop("Catchment overlaps a solar HRU - check by hand.")
 if (any(above$subbasin != 1))       stop("Catchment extends outside subbasin 1.")
 
-dem  <- rast("data/delineation_copy/MRDEM30_dtm.tif")
+dem  <- rast("data/gis/MRDEM30_dtm.tif")
 attr <- read.csv("data/processed/hru_attributes.csv")
 
 describe <- function(x) {
@@ -91,7 +91,7 @@ out$LAT <- round(out$LAT, 4);           out$LON <- round(out$LON, 4)
 
 write.csv(out, "data/processed/hru_split_08LG056.csv", row.names = FALSE)
 st_write(st_sf(station = "08LG056", area_km2 = km2_56, geometry = cat56),
-         "data/delineation_copy/catchment_08LG056.shp", delete_layer = TRUE, quiet = TRUE)
+         "data/gis/catchment_08LG056.shp", delete_layer = TRUE, quiet = TRUE)
 
 print(out, row.names = FALSE)
 cat(sprintf("Subbasin 3 area: %.3f km2;  subbasin 1 bands 2-5 before %.3f, after %.3f + %.3f km2\n",

@@ -12,8 +12,8 @@
 # CLOSE ArcGIS Pro first if the geodatabase is open in it. Existing feature classes with
 # these two names are replaced; nothing else in the geodatabase is touched.
 #
-# Geometry: data/delineation_copy/hrus_final.shp, with bands 2-5 of subbasin 1 cut by
-# data/delineation_copy/catchment_08LG056.shp. Projection: BC Albers (EPSG:3005).
+# Geometry: data/gis/hrus_final.shp, with bands 2-5 of subbasin 1 cut by
+# data/gis/catchment_08LG056.shp. Projection: BC Albers (EPSG:3005).
 # Model attributes are read from hbvec.rvh; the GIS_ and ELEV_MIN/MAX fields are measured here.
 
 suppressMessages({library(sf); library(terra)})
@@ -24,8 +24,8 @@ if (is.na(gdb)) gdb <- "../../ArcGIS/mahatemEEwuh/mahatemEEwuh.gdb"
 crs <- 3005
 
 # ---- HRU polygons as modelled ------------------------------------------------
-hru0 <- st_transform(st_make_valid(st_read("data/delineation_copy/hrus_final.shp", quiet = TRUE)), crs)
-c56  <- st_geometry(st_transform(st_read("data/delineation_copy/catchment_08LG056.shp", quiet = TRUE), crs))
+hru0 <- st_transform(st_make_valid(st_read("data/gis/hrus_final.shp", quiet = TRUE)), crs)
+c56  <- st_geometry(st_transform(st_read("data/gis/catchment_08LG056.shp", quiet = TRUE), crs))
 cut  <- hru0$subbasin == 1 & hru0$BAND > 0
 suppressWarnings({
   above <- st_intersection(hru0[cut, ], c56)
@@ -76,7 +76,7 @@ tab$SOLAR_SITE <- as.integer(tab$HRU_ID %in% c(1, 6))   # HRU 6 is no longer in 
 tab$PCT_OF_SUBBASIN <- round(100 * tab$AREA_KM2 / ave(tab$AREA_KM2, tab$SUBBASIN_ID, FUN = sum), 2)
 
 # ---- measured in GIS -----------------------------------------------------------
-dem <- rast("data/delineation_copy/MRDEM30_dtm.tif")
+dem <- rast("data/gis/MRDEM30_dtm.tif")
 z   <- terra::extract(dem, vect(st_transform(hru, crs(dem))), fun = function(x) c(min(x, na.rm = TRUE), max(x, na.rm = TRUE)))
 hru$GIS_AREA_KM2 <- round(as.numeric(st_area(hru)) / 1e6, 3)
 hru$ELEV_MIN <- round(z[, 2], 1); hru$ELEV_MAX <- round(z[, 3], 1)

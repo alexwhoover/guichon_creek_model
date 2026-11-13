@@ -1,4 +1,4 @@
-# Download Daymet V4 R1 daily weather (1 km grid) at sample points covering every model HRU.
+# Download Daymet V4 R1 daily weather (1 km grid) at sample points covering every modelled HRU.
 #
 # Daymet's NetCDF server (THREDDS) now requires a NASA Earthdata login, so this uses the
 # open single-pixel API instead (https://daymet.ornl.gov/single-pixel/), one request per point.
@@ -7,11 +7,13 @@
 # HRU mean, the same as Raven's :GriddedForcing + :GridWeights would compute.
 # HRUs with fewer than MIN_PTS grid points (the solar HRUs, HRU 12) get a 250 m grid instead.
 #
-# HRU polygons are rebuilt as in analysis/map_subbasins_hrus.R: hrus_final.shp, with bands 2-5
-# of subbasin 1 cut by catchment_08LG056.shp into HRUs 2-5 (below) and 12-15 (above).
+# HRU polygons are rebuilt from data/gis/: hrus_final.shp, with bands 2-5 of subbasin 1 cut by
+# catchment_08LG056.shp into HRUs 2-5 (below) and 12-15 (above). Points are laid out and
+# numbered over all 15 HRUs of that delineation, so point_ids (which name the raw files) stay
+# stable, and then only the points in HRUs listed in hbvec.rvh are kept and downloaded.
 #
 # Outputs:
-#   data/processed/daymet_points.csv     point_id, HRU_ID, lon, lat
+#   data/processed/daymet_points.csv     point_id, HRU_ID, lon, lat (modelled HRUs only)
 #   data/raw/daymet/pt_NNNN.csv          raw API response per point (git-ignored, ~0.4 MB each)
 #
 # Usage (from Raven/HBVEC_Model):  Rscript data/scripts/get_daymet.R
@@ -22,7 +24,7 @@ suppressMessages(library(sf))
 sf_use_s2(FALSE)
 
 START   <- "1980-01-01"   # Daymet starts 1980; model starts 1980-10-01 (WY1981 spin-up)
-END     <- "2024-12-31"   # flow records (08LG041, 08LG056) end 2024-12-31
+END     <- "2024-12-31"   # the 08LG056 flow record ends 2024-12-31
 SPACING <- 2000      # m, main sampling grid
 FINE    <- 250       # m, grid for small HRUs
 MIN_PTS <- 5
@@ -31,8 +33,8 @@ dir.create(RAW, showWarnings = FALSE, recursive = TRUE)
 
 # ---- HRU polygons as modelled -----------------------------------------------
 crs  <- 3005
-hru0 <- st_transform(st_make_valid(st_read("data/delineation_copy/hrus_final.shp", quiet = TRUE)), crs)
-c56  <- st_geometry(st_transform(st_read("data/delineation_copy/catchment_08LG056.shp", quiet = TRUE), crs))
+hru0 <- st_transform(st_make_valid(st_read("data/gis/hrus_final.shp", quiet = TRUE)), crs)
+c56  <- st_geometry(st_transform(st_read("data/gis/catchment_08LG056.shp", quiet = TRUE), crs))
 suppressWarnings({
   above <- st_intersection(hru0[hru0$subbasin == 1 & hru0$BAND > 0, ], c56)
   below <- st_difference(hru0[hru0$subbasin == 1 & hru0$BAND > 0, ], c56)
@@ -59,6 +61,10 @@ pts <- do.call(rbind, lapply(seq_len(nrow(hru)), function(i) {
 pts <- pts[order(pts$HRU_ID), ]
 pts$point_id <- seq_len(nrow(pts))
 pts <- pts[, c("point_id", "HRU_ID", "lon", "lat")]
+# keep only the HRUs in the model (point_ids are not renumbered)
+rvh_ids <- as.integer(sub(",.*", "", grep("^\\s+\\d+,\\s+[0-9.]+,\\s+[0-9.]+,\\s+[0-9.]+,\\s+-",
+                                          readLines("hbvec.rvh"), value = TRUE)))
+pts <- pts[pts$HRU_ID %in% rvh_ids, ]
 write.csv(pts, "data/processed/daymet_points.csv", row.names = FALSE)
 cat("Sample points per HRU:\n"); print(table(pts$HRU_ID))
 

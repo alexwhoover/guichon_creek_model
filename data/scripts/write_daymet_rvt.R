@@ -22,7 +22,7 @@
 #          hbvec.rvh (HRU locations), hbvec.rvt (gauge corrections, observed-flow redirects)
 # Outputs: data/processed/daymet_hru_daily.csv     HRU-mean daily forcing
 #          data/processed/daymet_hru_normals.csv   monthly temperature + PET per HRU
-#          data/daymet/met_daymet_hruNN.rvt        :MultiData per HRU
+#          data/model_input/forcing/met_daymet_hruNN.rvt        :MultiData per HRU
 #          hbvec.rvt                               gauge blocks + observed flow (overwritten)
 #
 # Usage (from Raven/HBVEC_Model):  Rscript data/scripts/write_daymet_rvt.R
@@ -32,14 +32,13 @@ Sys.setenv(TZ = "America/Vancouver")
 
 NORM_START <- as.Date("1980-10-01")   # = :StartDate in hbvec.rvi
 NORM_END   <- as.Date("2024-09-30")   # = :EndDate
-dir.create("data/daymet", showWarnings = FALSE)
+dir.create("data/model_input/forcing", showWarnings = FALSE)
 
 # ---- read and average the point series ---------------------------------------
 # Running sum per HRU (all points share Daymet's dates), which keeps memory small.
 pts <- read.csv("data/processed/daymet_points.csv")
-# Only the HRUs in hbvec.rvh get a gauge. daymet_points.csv still covers all 15 HRUs of the
-# original delineation (subbasin 2's HRUs 6-11 were removed from the model on 2026-11-12);
-# its point_ids must stay as they are, because they name the raw files in data/raw/daymet/.
+# Only the HRUs in hbvec.rvh get a gauge (get_daymet.R already keeps only those points).
+# point_ids are never renumbered, because they name the raw files in data/raw/daymet/.
 rvh_ids <- as.integer(sub(",.*", "", grep("^\\s+\\d+,\\s+[0-9.]+,\\s+[0-9.]+,\\s+[0-9.]+,\\s+-",
                                           readLines("hbvec.rvh"), value = TRUE)))
 pts <- pts[pts$HRU_ID %in% rvh_ids, ]
@@ -86,7 +85,7 @@ stopifnot(setequal(loc$HRU_ID, unique(full$HRU_ID)))
 rvt  <- readLines("hbvec.rvt")
 rain <- unique(trimws(grep("^\\s*:RainCorrection", rvt, value = TRUE)))
 snow <- unique(trimws(grep("^\\s*:SnowCorrection", rvt, value = TRUE)))
-obs  <- grep("^:RedirectToFile data/obs_", rvt, value = TRUE)
+obs  <- grep("^:RedirectToFile data/model_input/flow/", rvt, value = TRUE)
 stopifnot(length(rain) == 1, length(snow) == 1, length(obs) >= 1)   # one value shared by all gauges
 corr <- paste0("  ", c(rain, snow))
 
@@ -115,7 +114,7 @@ normals <- list()
 for (h in sort(loc$HRU_ID)) {
   x  <- full[full$HRU_ID == h, ]
   L  <- loc[loc$HRU_ID == h, ]
-  fn <- sprintf("data/daymet/met_daymet_hru%02d.rvt", h)
+  fn <- sprintf("data/model_input/forcing/met_daymet_hru%02d.rvt", h)
   con <- file(fn, "w")
   writeLines(c(sprintf("# Daymet V4 R1 daily forcing, area-weighted mean over HRU %d (%d sample points)",
                        h, sum(pts$HRU_ID == h)),
@@ -149,4 +148,4 @@ for (h in sort(loc$HRU_ID)) {
 out <- c(out, "# Observed streamflow: WSC 08LG056 (subbasin 3, natural flow; calibration target)", obs)
 writeLines(out, "hbvec.rvt")
 write.csv(do.call(rbind, normals), "data/processed/daymet_hru_normals.csv", row.names = FALSE)
-cat("Wrote hbvec.rvt and", length(loc$HRU_ID), "files in data/daymet/\n")
+cat("Wrote hbvec.rvt and", length(loc$HRU_ID), "files in data/model_input/forcing/\n")
